@@ -80,6 +80,17 @@ namespace RemoteFork {
         private void bStartServer_Click(object sender, EventArgs e) {
             toolStripStatusLabel1.Text = "Запуск сервера..";
             try {
+                System.Net.WebRequest reqGET = System.Net.WebRequest.Create(@"http://getlist2.obovse.ru/remote/index.php?v=1.2" + @"&do=list&localip=" + tbIp.Text + ":"+tbPort.Text);
+                System.Net.WebResponse resp = reqGET.GetResponse();
+                System.IO.Stream stream = resp.GetResponseStream();
+                System.IO.StreamReader sr = new System.IO.StreamReader(stream);
+                string res = sr.ReadToEnd();
+                String str = @"";
+                if (res.Split('|')[0].ToString() == "new_version")
+                {
+                    str = res.Split('|')[1].ToString();
+                    MessageBox.Show(str);
+                }
                 StartServer();
                 bStartServer.Enabled = false;
                 bStopServer.Enabled = true;
