@@ -90,7 +90,7 @@ namespace RemoteFork.Plugins
         {
             foreach (Type type in assembly.GetExportedTypes())
             {
-                if (type.IsSubclassOf(typeof(IPlugin)) && type.IsAbstract == false)
+                if (typeof(IPlugin).IsAssignableFrom(type) && type.IsAbstract == false)
                 {
                     var attributes = type.GetCustomAttributes(true);
 

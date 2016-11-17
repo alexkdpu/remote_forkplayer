@@ -9,7 +9,11 @@ namespace RemoteFork {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Main main = new Main {
+#if DEBUG
+                WindowState = FormWindowState.Normal
+#else
                 WindowState = FormWindowState.Minimized
+#endif
             };
             Application.Run(main);
         }
