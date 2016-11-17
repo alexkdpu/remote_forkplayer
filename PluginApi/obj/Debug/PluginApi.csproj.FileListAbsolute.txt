@@ -1,5 +1,0 @@
-E:\projects\home\remote_forkplayer\PluginApi\bin\Debug\PluginApi.dll
-E:\projects\home\remote_forkplayer\PluginApi\bin\Debug\PluginApi.pdb
-E:\projects\home\remote_forkplayer\PluginApi\obj\Debug\PluginApi.dll
-E:\projects\home\remote_forkplayer\PluginApi\obj\Debug\PluginApi.pdb
-E:\projects\home\remote_forkplayer\PluginApi\obj\Debug\PluginApi.csprojResolveAssemblyReference.cache
