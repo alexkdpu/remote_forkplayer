@@ -125,6 +125,8 @@
       <DependentUpon>PluginsConfigurate.cs</DependentUpon>
     </Compile>
     <Compile Include="Logger.cs" />
+    <Compile Include="Network\HttpUtility.cs" />
+    <Compile Include="Plugins\PluginContext.cs" />
     <Compile Include="Plugins\PluginInstance.cs" />
     <Compile Include="Plugins\PluginManager.cs" />
     <Compile Include="Requestes\ProcessorRequest.cs" />
@@ -139,7 +141,6 @@
     <Compile Include="Requestes\PluginRequest.cs" />
     <Compile Include="Server\HttpProcessor.cs" />
     <Compile Include="Server\HttpServer.cs" />
-    <Compile Include="Network\HttpUtility.cs" />
     <Compile Include="Server\MyHttpServer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\Settings.Designer.cs">

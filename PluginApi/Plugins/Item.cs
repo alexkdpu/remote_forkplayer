@@ -1,15 +1,15 @@
 ﻿namespace RemoteFork.Plugins {
-    public class BaseItem {
+    public class Item {
         public string Name;
         public string Link;
         public string ImageLink;
         public string Description;
         public ItemType Type = ItemType.DIRECTORY;
 
-        public BaseItem() {
+        public Item() {
         }
 
-        public BaseItem(BaseItem item) {
+        public Item(Item item) {
 
             Name = item.Name;
             Link = item.Link;

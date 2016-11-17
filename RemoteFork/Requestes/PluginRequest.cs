@@ -37,7 +37,7 @@ namespace RemoteFork.Requestes {
                     if (plugin != null) {
                         Logger.Debug("PluginRequest->Execute: {0}", plugin.Name);
 
-                        var items = plugin.Instance.GetList(array[0]);
+                        var items = plugin.Instance.GetList(new PluginContext(array[0]));
                         foreach (var item in items) {
                             switch (item.Type) {
                                 case ItemType.DIRECTORY:
