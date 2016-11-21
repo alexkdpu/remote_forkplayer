@@ -79,7 +79,7 @@ namespace RemoteFork.Requestes {
                                                         <![CDATA[{0}]]>
                                                     </title>
                                                     <description>
-                                                        <![CDATA[{1}]
+                                                        <![CDATA[{1}]]>
                                                     </description>
                                                     <logo_30x30>
                                                         {2}
