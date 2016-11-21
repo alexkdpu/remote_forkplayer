@@ -43,6 +43,7 @@
     <Compile Include="Plugins\IPlugin.cs" />
     <Compile Include="Plugins\PluginAttribute.cs" />
     <Compile Include="Plugins\IPluginContext.cs" />
+    <Compile Include="Plugins\Response.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

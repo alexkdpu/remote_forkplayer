@@ -45,7 +45,7 @@ namespace RemoteFork.Plugins
 
             public string PostRequest(string link, Dictionary<string, string> data, Dictionary<string, string> header = null)
             {
-                return HttpUtility.PostRequest(link, header);
+                return HttpUtility.PostRequest(link, data, header);
             }
         }
 

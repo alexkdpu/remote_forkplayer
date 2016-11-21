@@ -145,12 +145,20 @@ namespace RemoteFork.Plugins
 
                 if (Settings.Default.Plugins && Settings.Default.EnablePlugins != null)
                 {
+#if DEBUG
+                    foreach (var plugin in plugins)
+                    {
+                        dict.Add(plugin.Key, plugin.Value);
+                    }
+#else
                     foreach (
                         var plugin in plugins.Where(plugin => Settings.Default.EnablePlugins.Contains(plugin.Value.Key))
                     )
                     {
                         dict.Add(plugin.Key, plugin.Value);
                     }
+
+#endif
                 }
 
                 return dict;
@@ -164,14 +172,14 @@ namespace RemoteFork.Plugins
             {
                 if (Settings.Default.Plugins && Settings.Default.EnablePlugins != null)
                 {
-                    #if DEBUG
-                        return plugins[id];
-                    #else
+#if DEBUG
+                    return plugins[id];
+#else
                         if (Settings.Default.EnablePlugins.Contains(plugins[id].Key))
                         {
                             return plugins[id];
                         }
-                    #endif
+#endif
                 }
             }
 

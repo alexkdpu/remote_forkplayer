@@ -9,8 +9,6 @@ namespace RemoteFork.Server {
         private readonly TcpListener listener;
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
         
-        private const int TIME_OUT = 10;
-
         protected HttpServer(IPAddress ip, int port) {
             Logger.Info("Server start");
             listener = new TcpListener(new IPEndPoint(ip, port));
@@ -25,9 +23,9 @@ namespace RemoteFork.Server {
 
                     ThreadPool.QueueUserWorkItem(processor.Process);
 
-                    Thread.Sleep(TIME_OUT);
-                } catch (Exception) {
-                    Logger.Error("Server crashed");
+                    Thread.Yield();
+                } catch (Exception e) {
+                    Logger.Error("Server crashed: {0}, {1}", e.Message, e.StackTrace);
                 }
             }
         }
@@ -35,7 +33,7 @@ namespace RemoteFork.Server {
         public void Stop() {
             Logger.Info("Server stop");
             cts.Cancel();
-            if (listener != null) {
+            if (listener != null) {                
                 listener.Stop();
             }
         }
