@@ -110,7 +110,7 @@ namespace RemoteFork.Forms {
         }
 
         private void StopServer() {
-            httpServer.Stop();
+            httpServer?.Stop();
         }
 
         #endregion Server

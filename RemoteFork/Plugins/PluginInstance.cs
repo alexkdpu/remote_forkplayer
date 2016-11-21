@@ -14,10 +14,10 @@ namespace RemoteFork.Plugins {
         private readonly Assembly assembly;
         private readonly Type type;
 
-        private BasePlugin instance;
+        private IPlugin instance;
 
-        public BasePlugin Instance { get {
-            return instance ?? (instance = (BasePlugin) assembly.CreateInstance(type.FullName));
+        public IPlugin Instance { get {
+            return instance ?? (instance = assembly.CreateInstance(type.FullName) as IPlugin);
         } }
 
         public PluginInstance(string key, Assembly assembly, Type type, PluginAttribute attribute) {
