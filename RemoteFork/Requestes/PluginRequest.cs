@@ -146,7 +146,7 @@ namespace RemoteFork.Requestes {
                                                     <![CDATA[{3}]]>
                                                 </playlist_url>
                                                 <search_on>
-                                                    search_on
+                                                    Поиск
                                                 </search_on>
                                             </channel>",
                                             item.Name, 
