@@ -58,7 +58,7 @@ namespace RemoteFork {
                 if (!File.Exists(LOG_FILE_NAME)) {
                     File.Create(LOG_FILE_NAME).Close();
                 }
-                text = string.Format("[{0}] {1:G}: {2}.{3}", level, DateTime.Now, text, Environment.NewLine);
+                text = string.Format("[{0}] {1:G}: {2}{3}", level, DateTime.Now, text, Environment.NewLine);
                 //Console.WriteLine(text);
                 File.AppendAllText(LOG_FILE_NAME, text, Encoding.UTF8);
                 var info = new FileInfo(LOG_FILE_NAME);

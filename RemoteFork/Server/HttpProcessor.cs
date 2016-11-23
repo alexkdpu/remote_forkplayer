@@ -38,26 +38,19 @@ namespace RemoteFork.Server {
                         HandlePostRequest();
                     }
                 }
-            } catch (Exception ex) {
-                Logger.Error("HttpProcessor->Process: {0}", ex);
-                //WriteFailure();
-            }
-            try {
                 outputStream.Flush();
             } catch (Exception ex) {
                 Logger.Error("HttpProcessor->Process: {0}", ex);
+                WriteFailure();
             } finally {
+                outputStream?.Close();
+                inputStream?.Close();
+
                 inputStream = null;
                 outputStream = null;
-                //if (inputStream != null) {
-                //    inputStream.Close();
-                //}
-                //if (outputStream != null) {
-                //    outputStream.Close();
-                //}
-                if (client != null) {
-                    client.Close();
-                }
+
+                client?.Close();
+
                 Logger.Debug("HttpProcessor: Socked close");
             }
         }

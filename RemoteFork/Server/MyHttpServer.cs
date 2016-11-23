@@ -13,7 +13,9 @@ namespace RemoteFork.Server {
 
         public override void HandleGetRequest(HttpProcessor processor) {
             string httpUrl = System.Web.HttpUtility.UrlDecode(processor.HttpUrl);
-            //Logger.Info("HandleGetRequest->Url: {0}", httpUrl);
+
+            Logger.Debug("HandleGetRequest->Url: {0}", httpUrl);
+
             string result = string.Empty;
 
             if (!string.IsNullOrEmpty(httpUrl)) {
