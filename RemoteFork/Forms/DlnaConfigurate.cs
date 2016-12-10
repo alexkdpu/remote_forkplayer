@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using RemoteFork.Properties;
 
@@ -44,15 +43,13 @@ namespace RemoteFork.Forms {
         }
 
         private void LoadDirectories() {
-            if (Settings.Default.DlnaDirectories != null && Settings.Default.DlnaDirectories.Count > 0) {
-                foreach (var directory in Settings.Default.DlnaDirectories) {
-                    lbDirectories.Items.Add(directory);
-                }
+            if ((Settings.Default.DlnaDirectories != null) && (Settings.Default.DlnaDirectories.Count > 0)) {
+                foreach (var directory in Settings.Default.DlnaDirectories) lbDirectories.Items.Add(directory);
             }
         }
 
         private void LoadFileExtensions() {
-            if (Settings.Default.DlnaFileExtensions != null && Settings.Default.DlnaFileExtensions.Count > 0) {
+            if ((Settings.Default.DlnaFileExtensions != null) && (Settings.Default.DlnaFileExtensions.Count > 0)) {
                 tbDlnaFileExtensions.Text = string.Join(",", Settings.Default.DlnaFileExtensions.Cast<string>());
             }
         }
@@ -69,6 +66,7 @@ namespace RemoteFork.Forms {
 
         private void SaveDirectories() {
             var collection = new StringCollection();
+
             foreach (var item in lbDirectories.Items) {
                 collection.Add(item.ToString());
             }
@@ -78,6 +76,7 @@ namespace RemoteFork.Forms {
 
         private void SaveFileExtensions() {
             var collection = new StringCollection();
+
             foreach (var item in tbDlnaFileExtensions.Text.Split(',')) {
                 collection.Add(item.Trim());
             }
@@ -106,7 +105,7 @@ namespace RemoteFork.Forms {
         }
 
         public static bool CheckAccess(string file) {
-            bool result = true;
+            var result = true;
 
             file = Path.GetFullPath(file);
 
@@ -127,7 +126,7 @@ namespace RemoteFork.Forms {
             }
 
             if (File.Exists(file)) {
-                if (Settings.Default.DlnaFileExtensions != null && Settings.Default.DlnaFileExtensions.Count > 0) {
+                if ((Settings.Default.DlnaFileExtensions != null) && (Settings.Default.DlnaFileExtensions.Count > 0)) {
                     result = Settings.Default.DlnaFileExtensions.Cast<string>().Any(file.EndsWith);
                 }
             }

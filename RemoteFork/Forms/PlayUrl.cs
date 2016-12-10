@@ -18,7 +18,7 @@ namespace RemoteFork.Forms {
         private void bPlay_Click(object sender, EventArgs e) {
             DialogResult = DialogResult.OK;
             var collection = new StringCollection();
-            foreach (string line in tbUrls.Lines) {
+            foreach (var line in tbUrls.Lines) {
                 collection.Add(line);
             }
             Settings.Default.UserUrls = collection;

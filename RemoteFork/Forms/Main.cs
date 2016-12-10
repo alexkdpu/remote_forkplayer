@@ -3,19 +3,69 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using System.Threading;
+using System.Reflection;
 using System.Windows.Forms;
+using Common.Logging;
 using RemoteFork.Network;
 using RemoteFork.Plugins;
 using RemoteFork.Properties;
 using RemoteFork.Server;
+using Unosquare.Labs.EmbedIO;
 
 namespace RemoteFork.Forms {
     internal partial class Main : Form {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(Main));
+
         public static HashSet<string> Devices = new HashSet<string>();
 
-        private HttpServer httpServer;
-        private Thread thread;
+        private HttpServer _httpServer;
+
+        #region Settings
+
+        private void LoadSettings() {
+            Text += " " + Assembly.GetExecutingAssembly().GetName().Version;
+            notifyIcon1.Text += " " + Assembly.GetExecutingAssembly().GetName().Version;
+
+            cbLogs.SelectedIndex = Settings.Default.LogLevel;
+
+            cbAutoStart.Checked = Settings.Default.ServerAutoStart;
+            cbDlna.Checked = Settings.Default.Dlna;
+            tbPort.Text = Settings.Default.Port.ToString();
+
+            object[] ipAddresses = Tools.GetIPAddresses();
+            cbIp.Items.AddRange(ipAddresses);
+
+            IPAddress ip;
+            if (IPAddress.TryParse(Settings.Default.IpIPAddress, out ip)) {
+                if (cbIp.Items.Contains(ip)) {
+                    cbIp.SelectedItem = ip;
+                } else {
+                    cbIp.SelectedIndex = 0;
+                }
+            } else {
+                cbIp.SelectedIndex = 0;
+            }
+
+            if (Settings.Default.ServerAutoStart) {
+                bStartServer.PerformClick();
+            }
+
+            tbUserAgent.Text = Settings.Default.UserAgent;
+        }
+
+        #endregion Settings
+
+        private void tbUserAgent_KeyDown(object sender, KeyEventArgs e) {
+            switch (e.KeyCode) {
+                case Keys.Escape:
+                    tbUserAgent.Text = Settings.Default.UserAgent;
+                    break;
+                case Keys.Enter:
+                    Settings.Default.UserAgent = tbUserAgent.Text;
+                    Settings.Default.Save();
+                    break;
+            }
+        }
 
         #region Form
 
@@ -54,47 +104,10 @@ namespace RemoteFork.Forms {
 
         #endregion Form
 
-        #region Settings
-
-        private void LoadSettings() {
-            Text += " " + Settings.Default.AppVersion;
-            notifyIcon1.Text += " " + Settings.Default.AppVersion;
-
-            cbLogs.SelectedIndex = Settings.Default.LogLevel;
-
-            cbAutoStart.Checked = Settings.Default.ServerAutoStart;
-            cbDlna.Checked = Settings.Default.Dlna;
-            tbPort.Text = Settings.Default.Port.ToString();
-
-            object[] ipAddresses = Tools.GetIPAddresses();
-            cbIp.Items.AddRange(ipAddresses);
-
-            IPAddress ip;
-            if (IPAddress.TryParse(Settings.Default.IpIPAddress, out ip)) {
-                if (cbIp.Items.Contains(ip)) {
-                    cbIp.SelectedItem = ip;
-                } else {
-                    cbIp.SelectedIndex = 0;
-                }
-            } else {
-                cbIp.SelectedIndex = 0;
-            }
-
-            if (Settings.Default.ServerAutoStart) {
-                bStartServer.PerformClick();
-            }
-
-            tbUserAgent.Text = Settings.Default.UserAgent;
-        }
-
-        #endregion Settings
-
         #region Server
 
         private void StartServer() {
-            httpServer = new MyHttpServer((IPAddress) cbIp.SelectedItem, int.Parse(tbPort.Text));
-            thread = new Thread(httpServer.Listen);
-            thread.Start();
+            _httpServer = new HttpServer((IPAddress) cbIp.SelectedItem, int.Parse(tbPort.Text));
 
             RegisterServer();
         }
@@ -103,17 +116,32 @@ namespace RemoteFork.Forms {
             var result = HttpUtility.GetRequest(
                 string.Format(
                     "http://getlist2.obovse.ru/remote/index.php?v={0}&do=list&localip={1}:{2}",
-                    Settings.Default.AppVersion,
-                    cbIp.SelectedItem, tbPort.Text));
+                    Assembly.GetExecutingAssembly().GetName().Version,
+                    cbIp.SelectedItem,
+                    tbPort.Text));
 
-            Logger.Debug("StartServer->Result: {0}", result);
+            Log.Debug(m => m("StartServer->Result: {0}", result));
         }
 
         private void StopServer() {
-            httpServer?.Stop();
+            _httpServer?.Dispose();
+            _httpServer = null;
         }
 
         #endregion Server
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing) {
+            if (disposing) {
+                StopServer();
+                components?.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
 
         #region Settings
 
@@ -127,7 +155,7 @@ namespace RemoteFork.Forms {
                 toolStripStatusLabel1.Text = "Сервер запущен";
             } catch (Exception ex) {
                 toolStripStatusLabel1.Text = "Ошибка!";
-                Logger.Error("StartServer->Errot: {0}", ex);
+                Log.Error(m => m("StartServer->Errot: {0}", ex));
             }
         }
 
@@ -141,7 +169,7 @@ namespace RemoteFork.Forms {
                 toolStripStatusLabel1.Text = "Сервер остановлен";
             } catch (Exception ex) {
                 toolStripStatusLabel1.Text = "Ошибка!";
-                Logger.Error("StopServer->Errot: {0}", ex);
+                Log.Error(m => m("StopServer->Errot: {0}", ex));
             }
         }
 
@@ -180,7 +208,7 @@ namespace RemoteFork.Forms {
             Settings.Default.LogLevel = (byte) cb.SelectedIndex;
             Settings.Default.Save();
 
-            Logger.Level = (Logger.LogLevel) cb.SelectedIndex;
+            NLog.LogManager.GlobalThreshold = AppLogLevel.FromOrdinal(cb.SelectedIndex);
         }
 
         #endregion Settings
@@ -188,9 +216,7 @@ namespace RemoteFork.Forms {
         #region notifyIcon
 
         private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e) {
-            if (e.Button == MouseButtons.Left) {
-                ShowForm();
-            }
+            if (e.Button == MouseButtons.Left) ShowForm();
         }
 
         private void loadPlaylistToolStripMenuItem1_DropDownOpening(object sender, EventArgs e) {
@@ -198,8 +224,8 @@ namespace RemoteFork.Forms {
 
             if (Devices.Count > 0) {
                 foreach (var device in Devices) {
-                    string[] array = device.Split('|');
-                    string name = array[0] + " (" + array[2] + ")";
+                    var array = device.Split('|');
+                    var name = array[0] + " (" + array[2] + ")";
 
                     var item = new ToolStripMenuItem {
                         Name = "device" + array[0] + "ToolStripMenuItem",
@@ -217,17 +243,16 @@ namespace RemoteFork.Forms {
 
         private void devicesToolStripMenuItem_Click(object sender, EventArgs e) {
             var clickedItem = (ToolStripMenuItem) sender;
+
             if (openFileDialog1.ShowDialog() == DialogResult.OK) {
                 var streamReader = new StreamReader(openFileDialog1.FileName);
-                string text = streamReader.ReadToEnd();
+                var text = streamReader.ReadToEnd();
                 streamReader.Close();
-                if (text.Length < 102401 &&
-                    (text.Contains("EXTM3U") || text.Contains("<title>") || text.Contains("http://"))) {
-                    string url = "http://forkplayer.tv/remote/index.php?do=uploadfile&fname=" +
-                                 openFileDialog1.FileName + "&initial=" + clickedItem.Tag;
+                if ((text.Length < 102401) && (text.Contains("EXTM3U") || text.Contains("<title>") || text.Contains("http://"))) {
+                    var url = "http://forkplayer.tv/remote/index.php?do=uploadfile&fname=" + openFileDialog1.FileName + "&initial=" + clickedItem.Tag;
 
                     var data = new Dictionary<string, string> {{"text", text}};
-                    string text2 = HttpUtility.PostRequest(url, data);
+                    var text2 = HttpUtility.PostRequest(url, data);
 
                     MessageBox.Show(text2);
                 } else {
@@ -250,7 +275,7 @@ namespace RemoteFork.Forms {
                 foreach (var plugin in plugins) {
                     var item = new ToolStripMenuItem(plugin.Value.ToString()) {
                         Tag = plugin.Value.Key,
-                        Checked = Settings.Default.EnablePlugins != null &&
+                        Checked = (Settings.Default.EnablePlugins != null) &&
                                   Settings.Default.EnablePlugins.Contains(plugin.Value.Key),
                         CheckOnClick = true
                     };
@@ -264,16 +289,12 @@ namespace RemoteFork.Forms {
 
         private void pluginsToolStripMenuItem_CheckedChanged(object sender, EventArgs e) {
             var clickedItem = (ToolStripMenuItem) sender;
-            string key = clickedItem.Tag.ToString();
+            var key = clickedItem.Tag.ToString();
 
             if (clickedItem.Checked) {
-                if (!Settings.Default.EnablePlugins.Contains(key)) {
-                    Settings.Default.EnablePlugins.Add(key);
-                }
+                if (!Settings.Default.EnablePlugins.Contains(key)) Settings.Default.EnablePlugins.Add(key);
             } else {
-                if (Settings.Default.EnablePlugins.Contains(key)) {
-                    Settings.Default.EnablePlugins.Remove(key);
-                }
+                if (Settings.Default.EnablePlugins.Contains(key)) Settings.Default.EnablePlugins.Remove(key);
             }
 
             Settings.Default.Save();
@@ -296,17 +317,5 @@ namespace RemoteFork.Forms {
         }
 
         #endregion notifyIcon
-
-        private void tbUserAgent_KeyDown(object sender, KeyEventArgs e) {
-            switch (e.KeyCode) {
-                case Keys.Escape:
-                    tbUserAgent.Text = Settings.Default.UserAgent;
-                    break;
-                case Keys.Enter:
-                    Settings.Default.UserAgent = tbUserAgent.Text;
-                    Settings.Default.Save();
-                    break;
-            }
-        }
     }
 }

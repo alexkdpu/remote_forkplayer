@@ -3,43 +3,82 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
+using Common.Logging;
+using Unosquare.Labs.EmbedIO;
 
 namespace RemoteFork.Server {
-    internal abstract class HttpServer {
-        private readonly TcpListener listener;
-        private readonly CancellationTokenSource cts = new CancellationTokenSource();
-        
-        protected HttpServer(IPAddress ip, int port) {
-            Logger.Info("Server start");
-            listener = new TcpListener(new IPEndPoint(ip, port));
-            listener.Start();
+    internal class HttpServer : IDisposable {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(HttpServer));
+
+        private WebServer _webServer;
+
+        private CancellationTokenSource _cts;
+
+        private Task _task;
+
+        public HttpServer(IPAddress ip, int port) {
+            Log.Info(m => m("Server start"));
+
+            _cts = new CancellationTokenSource();
+
+            _webServer = WebServer.Create(
+                new UriBuilder {
+                    Scheme = "http",
+                    Host = ip.ToString(),
+                    Port = port,
+                    Path = "/"
+                }.ToString(),
+                new EmbedIOLogger()
+            );
+
+            _webServer.RegisterModule(new RequestDispatcher());
+
+            _task = _webServer?.RunAsync(_cts.Token);
         }
 
-        public void Listen() {
-            while (!cts.IsCancellationRequested) {
+        ~HttpServer() {
+            Dispose(false);
+        }
+
+        private void Stop() {
+            if (!(_cts?.IsCancellationRequested ?? true)) {
+                _cts?.Cancel();
+
                 try {
-                    TcpClient client = listener.AcceptTcpClient();
-                    HttpProcessor processor = new HttpProcessor(client, this);
-
-                    ThreadPool.QueueUserWorkItem(processor.Process);
-
-                    Thread.Yield();
-                } catch (Exception e) {
-                    Logger.Error("Server crashed: {0}, {1}", e.Message, e.StackTrace);
+                    _task?.Wait();
+                } catch (AggregateException) {
+                    Log.Info(m => m("Server stop"));
                 }
             }
         }
 
-        public void Stop() {
-            Logger.Info("Server stop");
-            cts.Cancel();
-            if (listener != null) {                
-                listener.Stop();
-            }
+        public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        public abstract void HandleGetRequest(HttpProcessor processor);
+        private void Dispose(bool disposing) {
+            if (!disposing) {
+                return;
+            }
 
-        public abstract void HandlePostRequest(HttpProcessor processor, StreamReader inputData);
+            Stop();
+
+            if (_webServer != null) {
+                _webServer.Dispose();
+                _webServer = null;
+            }
+
+            if (_cts != null) {
+                _cts.Dispose();
+                _cts = null;
+            }
+
+            if (_task != null) {
+                _task?.Dispose();
+                _task = null;
+            }
+        }
     }
 }
