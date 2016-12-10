@@ -9,7 +9,6 @@ using RemoteFork.Plugins;
 
 namespace RemoteFork.Server {
     internal class ResponseSerializer {
-
         public static string ToM3U(Item[] items) {
             var sb = new StringBuilder("#EXTM3U");
 
@@ -25,18 +24,18 @@ namespace RemoteFork.Server {
             return sb.ToString();
         }
 
-        public static string ToJson(Response response) {
+        public static string ToJson(Response pluginResponse) {
             var json = new JObject();
 
-            if (response.Items != null && response.Items.Any()) {
+            if (pluginResponse.Items != null && pluginResponse.Items.Any()) {
                 var channels = new JArray();
 
-                foreach (var item in response.Items) {
-                    var channel = new JObject();
-
-                    channel["title"] = item.Name ?? string.Empty;
-                    channel["description"] = item.Description ?? string.Empty;
-                    channel["logo_30x30"] = item.ImageLink ?? string.Empty;
+                foreach (var item in pluginResponse.Items) {
+                    var channel = new JObject {
+                        ["title"] = item.Name ?? string.Empty,
+                        ["description"] = item.Description ?? string.Empty,
+                        ["logo_30x30"] = item.ImageLink ?? string.Empty
+                    };
 
                     switch (item.Type) {
                         case ItemType.DIRECTORY:
@@ -49,23 +48,22 @@ namespace RemoteFork.Server {
                             channel["playlist_url"] = item.Link ?? string.Empty;
                             channel["search_on"] = item.Description ?? string.Empty;
                             break;
-
                     }
 
                     channels.Add(channel);
                 }
 
-                json["next_page_url"] = response.NextPageUrl ?? string.Empty;
+                json["next_page_url"] = pluginResponse.NextPageUrl ?? string.Empty;
                 json["channels"] = channels;
             }
 
             return json.ToString();
         }
 
-        public static string ToXml(Response response) {
-            var items = ItemsToXml(response.Items);
+        public static string ToXml(Response pluginResponse) {
+            var items = ItemsToXml(pluginResponse.Items);
 
-            items.AddFirst(new XElement("next_page_url", response.NextPageUrl ?? string.Empty));
+            items.AddFirst(new XElement("next_page_url", new XCData(pluginResponse.NextPageUrl ?? string.Empty)));
 
             return XmlToString(
                 new XDocument(
@@ -86,7 +84,7 @@ namespace RemoteFork.Server {
 
         private static string XmlToString(XDocument doc) {
             var builder = new StringBuilder();
-            var settings = new XmlWriterSettings() {
+            var settings = new XmlWriterSettings {
                 Indent = true
             };
 
@@ -119,7 +117,6 @@ namespace RemoteFork.Server {
                             channel.Add(new XElement("playlist_url", new XCData(item.Link ?? string.Empty)));
                             channel.Add(new XElement("search_on", new XCData(item.Description ?? string.Empty)));
                             break;
-
                     }
 
                     xmlItems.Add(channel);

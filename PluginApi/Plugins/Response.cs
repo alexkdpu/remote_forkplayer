@@ -1,4 +1,5 @@
-﻿using RemoteFork.Plugins;
+﻿using System.Collections.Specialized;
+using RemoteFork.Plugins;
 
 namespace PluginApi.Plugins
 {
