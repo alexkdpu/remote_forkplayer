@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -249,6 +250,8 @@ namespace RemoteFork.Requestes {
     sealed class FileRequest {
         private static readonly MD5CryptoServiceProvider Md5 = new MD5CryptoServiceProvider();
 
+        private static readonly Dictionary<string, string> MimeTypes = new Dictionary<string, string>(Constants.StandardStringComparer);
+
         private const string HeaderIfRange = "If-Range";
 
         private static readonly string[] HttpDateFormats = {"r", "dddd, dd-MMM-yy HH':'mm':'ss 'GMT'", "ddd MMM d HH':'mm':'ss yyyy"};
@@ -260,6 +263,16 @@ namespace RemoteFork.Requestes {
         public string Boundary { get; } = "---------------------------" + DateTime.Now.Ticks.ToString("x");
 
         private readonly HttpListenerContext _context;
+
+        static FileRequest() {
+            foreach (var mimeType in Constants.DefaultMimeTypes) {
+                MimeTypes[mimeType.Key] = mimeType.Value;
+            }
+
+            foreach (var mimeType in Tools.MimeTypes) {
+                MimeTypes[mimeType.Key] = mimeType.Value;
+            }
+        }
 
         private FileRequest(HttpListenerContext context, string file) {
             _context = context;
@@ -281,7 +294,7 @@ namespace RemoteFork.Requestes {
 
         private void Parse() {
             EntityTag = GenerateEntityTag();
-            ContentType = Constants.DefaultMimeTypes[File.Extension];
+            ContentType = MimeTypes.ContainsKey(File.Extension) ? MimeTypes[File.Extension] : null;
             ParseRanges();
         }
 

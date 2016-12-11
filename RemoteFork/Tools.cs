@@ -40,7 +40,7 @@ namespace RemoteFork {
 
         #region File extensions
 
-        private static readonly IDictionary<string, string> mappings =
+        public static readonly IDictionary<string, string> MimeTypes =
             new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase) {
                 #region Big freaking list of mime types
                 {".323", "text/h323"},
@@ -270,7 +270,7 @@ namespace RemoteFork {
             };
 
         public static string GetMimeType(string fileName) {
-            var extension = mappings.FirstOrDefault(i => fileName.EndsWith(i.Key));
+            var extension = MimeTypes.FirstOrDefault(i => fileName.EndsWith(i.Key));
             return extension.Value;
         }
 
