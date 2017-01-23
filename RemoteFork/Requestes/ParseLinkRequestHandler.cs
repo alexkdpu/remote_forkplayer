@@ -52,7 +52,7 @@ namespace RemoteFork.Requestes {
         }
 
         public string CurlRequest(string text) {
-            string result;
+            string result; bool verbose = text.IndexOf(" -i", StringComparison.Ordinal) > 0;
 
             var url = Regex.Match(text, "(?:\")(.*?)(?=\")").Groups[1].Value;
             var matches = Regex.Matches(text, "(?:-H\\s\")(.*?)(?=\")");
@@ -65,17 +65,17 @@ namespace RemoteFork.Requestes {
                 into value
                 where value.Contains(": ")
                 select value).ToDictionary(value => value.Remove(value.IndexOf(": ", StringComparison.Ordinal)),
-                                           value => value.Substring(value.IndexOf(": ", StringComparison.Ordinal) + 2));
+                    value => value.Substring(value.IndexOf(": ", StringComparison.Ordinal) + 2));
             if (text.Contains("--data")) {
                 var dataString = Regex.Match(text, "(?:--data\\s\")(.*?)(?=\")").Groups[1].Value;
                 var dataArray = dataString.Split('&');
-                var data = dataArray.ToDictionary(
-                    value => value.Remove(value.IndexOf("=", StringComparison.Ordinal)),
-                    value => value.Substring(value.IndexOf("=", StringComparison.Ordinal) + 1)
-                );
-                result = HttpUtility.PostRequest(url, data, header);
+                var data =
+                    dataArray.ToDictionary(value => value.Remove(value.IndexOf("=", StringComparison.Ordinal)),
+                        value => value.Substring(value.IndexOf("=", StringComparison.Ordinal) + 1));
+                result = HttpUtility.PostRequest(url, data, header, verbose);
             } else {
-                result = HttpUtility.GetRequest(url, header);
+                Log.Info(url);
+                result = HttpUtility.GetRequest(url, header, verbose);
             }
 
             return result;

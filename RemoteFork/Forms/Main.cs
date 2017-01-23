@@ -4,13 +4,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Common.Logging;
 using RemoteFork.Network;
 using RemoteFork.Plugins;
 using RemoteFork.Properties;
 using RemoteFork.Server;
-using Unosquare.Labs.EmbedIO;
 
 namespace RemoteFork.Forms {
     internal partial class Main : Form {
@@ -19,6 +19,7 @@ namespace RemoteFork.Forms {
         public static HashSet<string> Devices = new HashSet<string>();
 
         private HttpServer _httpServer;
+        private Process thvpid;
 
         #region Settings
 
@@ -50,6 +51,11 @@ namespace RemoteFork.Forms {
                 bStartServer.PerformClick();
             }
 
+            if (Settings.Default.THVPAutoStart) {
+                ThvpStart();
+            }
+            thvpAutoStart.Checked = Settings.Default.THVPAutoStart;
+
             tbUserAgent.Text = Settings.Default.UserAgent;
         }
 
@@ -65,6 +71,19 @@ namespace RemoteFork.Forms {
                     Settings.Default.Save();
                     break;
             }
+        }
+
+        /// <summary>
+        ///     Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing) {
+            if (disposing) {
+                StopServer();
+                components?.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
 
         #region Form
@@ -129,19 +148,6 @@ namespace RemoteFork.Forms {
         }
 
         #endregion Server
-
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing) {
-            if (disposing) {
-                StopServer();
-                components?.Dispose();
-            }
-
-            base.Dispose(disposing);
-        }
 
         #region Settings
 
@@ -216,7 +222,9 @@ namespace RemoteFork.Forms {
         #region notifyIcon
 
         private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e) {
-            if (e.Button == MouseButtons.Left) ShowForm();
+            if (e.Button == MouseButtons.Left) {
+                ShowForm();
+            }
         }
 
         private void loadPlaylistToolStripMenuItem1_DropDownOpening(object sender, EventArgs e) {
@@ -292,9 +300,13 @@ namespace RemoteFork.Forms {
             var key = clickedItem.Tag.ToString();
 
             if (clickedItem.Checked) {
-                if (!Settings.Default.EnablePlugins.Contains(key)) Settings.Default.EnablePlugins.Add(key);
+                if (!Settings.Default.EnablePlugins.Contains(key)) {
+                    Settings.Default.EnablePlugins.Add(key);
+                }
             } else {
-                if (Settings.Default.EnablePlugins.Contains(key)) Settings.Default.EnablePlugins.Remove(key);
+                if (Settings.Default.EnablePlugins.Contains(key)) {
+                    Settings.Default.EnablePlugins.Remove(key);
+                }
             }
 
             Settings.Default.Save();
@@ -311,11 +323,55 @@ namespace RemoteFork.Forms {
         private void exitToolStripMenuItem_Click(object sender, EventArgs e) {
             try {
                 StopServer();
+                ThvpStop();
             } finally {
                 Close();
             }
         }
 
         #endregion notifyIcon
+
+        #region THVP
+
+        public void ThvpStart() {
+            var ps1 = Process.GetProcessesByName("thvp");
+            if (ps1.Length > 0) {
+                MessageBox.Show("THVP BitTorrent уже запущен!");
+            } else {
+                var thvpPath = Path.Combine(Directory.GetCurrentDirectory(), "THVP/thvp.exe");
+                if (File.Exists(thvpPath)) {
+                    thvpid = Process.Start(thvpPath);
+                }
+            }
+        }
+
+        public void ThvpStop() { }
+
+
+        private void tHVPToolStripMenuItem_Click(object sender, EventArgs e) { }
+
+        private void runToolStripMenuItem_Click(object sender, EventArgs e) {
+            ThvpStart();
+        }
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e) {
+            Settings.Default.THVPAutoStart = thvpAutoStart.Checked;
+            Settings.Default.Save();
+        }
+
+        private void tbUserAgent_TextChanged(object sender, EventArgs e) { }
+
+        private void gotoToolStripMenuItem_Click(object sender, EventArgs e) {
+            Process.Start("http://thvp.ru/about");
+        }
+
+        #endregion
     }
 }

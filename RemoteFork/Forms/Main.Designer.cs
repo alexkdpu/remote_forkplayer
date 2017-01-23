@@ -25,6 +25,9 @@
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.loadPlaylistToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.pluginsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tHVPToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.runToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.gotoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.playUrlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
@@ -42,6 +45,7 @@
             this.cbLogs = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.tbUserAgent = new System.Windows.Forms.TextBox();
+            this.thvpAutoStart = new System.Windows.Forms.CheckBox();
             this.contextMenuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -61,7 +65,7 @@
             this.cbDlna.AutoSize = true;
             this.cbDlna.Checked = true;
             this.cbDlna.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbDlna.Location = new System.Drawing.Point(12, 149);
+            this.cbDlna.Location = new System.Drawing.Point(12, 169);
             this.cbDlna.Name = "cbDlna";
             this.cbDlna.Size = new System.Drawing.Size(94, 17);
             this.cbDlna.TabIndex = 5;
@@ -120,12 +124,13 @@
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.loadPlaylistToolStripMenuItem1,
             this.pluginsToolStripMenuItem,
+            this.tHVPToolStripMenuItem,
             this.playUrlToolStripMenuItem,
             this.openTestToolStripMenuItem,
             this.settingsToolStripMenuItem,
             this.exitToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(221, 136);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(221, 180);
             // 
             // loadPlaylistToolStripMenuItem1
             // 
@@ -142,6 +147,30 @@
             this.pluginsToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
             this.pluginsToolStripMenuItem.Text = "Плагины";
             this.pluginsToolStripMenuItem.DropDownOpening += new System.EventHandler(this.pluginsToolStripMenuItem_DropDownOpening);
+            // 
+            // tHVPToolStripMenuItem
+            // 
+            this.tHVPToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.runToolStripMenuItem,
+            this.gotoToolStripMenuItem});
+            this.tHVPToolStripMenuItem.Name = "tHVPToolStripMenuItem";
+            this.tHVPToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
+            this.tHVPToolStripMenuItem.Text = "THVP BitTorrent ";
+            this.tHVPToolStripMenuItem.Click += new System.EventHandler(this.tHVPToolStripMenuItem_Click);
+            // 
+            // runToolStripMenuItem
+            // 
+            this.runToolStripMenuItem.Name = "runToolStripMenuItem";
+            this.runToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
+            this.runToolStripMenuItem.Text = "Запуск THVP";
+            this.runToolStripMenuItem.Click += new System.EventHandler(this.runToolStripMenuItem_Click);
+            // 
+            // gotoToolStripMenuItem
+            // 
+            this.gotoToolStripMenuItem.Name = "gotoToolStripMenuItem";
+            this.gotoToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
+            this.gotoToolStripMenuItem.Text = "http://thvp.ru/about";
+            this.gotoToolStripMenuItem.Click += new System.EventHandler(this.gotoToolStripMenuItem_Click);
             // 
             // playUrlToolStripMenuItem
             // 
@@ -187,7 +216,7 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 253);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 267);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(217, 22);
             this.statusStrip1.TabIndex = 19;
@@ -205,7 +234,7 @@
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.IP);
             this.groupBox1.Controls.Add(this.tbPort);
-            this.groupBox1.Location = new System.Drawing.Point(12, 64);
+            this.groupBox1.Location = new System.Drawing.Point(12, 84);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(194, 79);
             this.groupBox1.TabIndex = 20;
@@ -237,7 +266,7 @@
             // llDlnaConfigurate
             // 
             this.llDlnaConfigurate.AutoSize = true;
-            this.llDlnaConfigurate.Location = new System.Drawing.Point(145, 150);
+            this.llDlnaConfigurate.Location = new System.Drawing.Point(145, 170);
             this.llDlnaConfigurate.Name = "llDlnaConfigurate";
             this.llDlnaConfigurate.Size = new System.Drawing.Size(61, 13);
             this.llDlnaConfigurate.TabIndex = 21;
@@ -251,7 +280,7 @@
             this.cbPlugins.AutoSize = true;
             this.cbPlugins.Checked = true;
             this.cbPlugins.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbPlugins.Location = new System.Drawing.Point(12, 172);
+            this.cbPlugins.Location = new System.Drawing.Point(12, 192);
             this.cbPlugins.Name = "cbPlugins";
             this.cbPlugins.Size = new System.Drawing.Size(71, 17);
             this.cbPlugins.TabIndex = 5;
@@ -262,7 +291,7 @@
             // llPluginsConfigurate
             // 
             this.llPluginsConfigurate.AutoSize = true;
-            this.llPluginsConfigurate.Location = new System.Drawing.Point(145, 173);
+            this.llPluginsConfigurate.Location = new System.Drawing.Point(145, 193);
             this.llPluginsConfigurate.Name = "llPluginsConfigurate";
             this.llPluginsConfigurate.Size = new System.Drawing.Size(61, 13);
             this.llPluginsConfigurate.TabIndex = 21;
@@ -274,7 +303,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(9, 195);
+            this.label2.Location = new System.Drawing.Point(9, 215);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(74, 13);
             this.label2.TabIndex = 22;
@@ -288,7 +317,7 @@
             "Информация",
             "Ошибки",
             "Отладка"});
-            this.cbLogs.Location = new System.Drawing.Point(89, 192);
+            this.cbLogs.Location = new System.Drawing.Point(89, 212);
             this.cbLogs.Name = "cbLogs";
             this.cbLogs.Size = new System.Drawing.Size(111, 21);
             this.cbLogs.TabIndex = 23;
@@ -297,7 +326,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(9, 223);
+            this.label3.Location = new System.Drawing.Point(9, 243);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(60, 13);
             this.label3.TabIndex = 24;
@@ -305,17 +334,32 @@
             // 
             // tbUserAgent
             // 
-            this.tbUserAgent.Location = new System.Drawing.Point(89, 220);
+            this.tbUserAgent.Location = new System.Drawing.Point(89, 240);
             this.tbUserAgent.Name = "tbUserAgent";
             this.tbUserAgent.Size = new System.Drawing.Size(111, 20);
             this.tbUserAgent.TabIndex = 25;
+            this.tbUserAgent.TextChanged += new System.EventHandler(this.tbUserAgent_TextChanged);
             this.tbUserAgent.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbUserAgent_KeyDown);
+            // 
+            // thvpAutoStart
+            // 
+            this.thvpAutoStart.AutoSize = true;
+            this.thvpAutoStart.Checked = true;
+            this.thvpAutoStart.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.thvpAutoStart.Location = new System.Drawing.Point(12, 62);
+            this.thvpAutoStart.Name = "thvpAutoStart";
+            this.thvpAutoStart.Size = new System.Drawing.Size(159, 17);
+            this.thvpAutoStart.TabIndex = 26;
+            this.thvpAutoStart.Text = "Автостарт THVP BitTorrent";
+            this.thvpAutoStart.UseVisualStyleBackColor = true;
+            this.thvpAutoStart.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(217, 275);
+            this.Controls.Add(this.thvpAutoStart);
             this.Controls.Add(this.tbUserAgent);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.cbLogs);
@@ -377,5 +421,9 @@
         private System.Windows.Forms.ToolStripMenuItem playUrlToolStripMenuItem;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox tbUserAgent;
+        private System.Windows.Forms.ToolStripMenuItem tHVPToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem runToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem gotoToolStripMenuItem;
+        private System.Windows.Forms.CheckBox thvpAutoStart;
     }
 }

@@ -9,11 +9,11 @@ using System.Runtime.InteropServices;
         DebuggableAttribute.DebuggingModes.Default | DebuggableAttribute.DebuggingModes.DisableOptimizations |
         DebuggableAttribute.DebuggingModes.IgnoreSymbolStoreSequencePoints |
         DebuggableAttribute.DebuggingModes.EnableEditAndContinue)]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("ForkPlayer && THVP")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyDescription("")]
-[assembly: AssemblyFileVersion("1.3.0.0")]
+[assembly: AssemblyFileVersion("1.3.0.1")]
 [assembly: AssemblyProduct("RemoteFork")]
 [assembly: AssemblyTitle("RemoteFork")]
 [assembly: AssemblyTrademark("")]
