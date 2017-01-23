@@ -29,9 +29,9 @@ namespace RemoteFork.Requestes {
                     if (pluginResponse != null) {
                         WriteResponse(response, ResponseSerializer.ToXml(pluginResponse));
                     } else {
-                        Log.Warn(m => m("Plugin Response is null. Plugin: {0}", pluginKey));
+                        Log.Warn(m => m("Plugin Playlist is null. Plugin: {0}", pluginKey));
 
-                        WriteResponse(response, HttpStatusCode.NotFound, $"Plugin Response is null. Plugin: {pluginKey}");
+                        WriteResponse(response, HttpStatusCode.NotFound, $"Plugin Playlist is null. Plugin: {pluginKey}");
                     }
                 } else {
                     Log.Warn(m => m("Plugin Not Found. Plugin: {0}", pluginKey));

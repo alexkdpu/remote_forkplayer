@@ -294,7 +294,7 @@ namespace RemoteFork.Requestes {
 
         private void Parse() {
             EntityTag = GenerateEntityTag();
-            ContentType = MimeTypes.ContainsKey(File.Extension) ? MimeTypes[File.Extension] : null;
+            ContentType = MimeTypes.ContainsKey(File.Extension) ? MimeTypes[File.Extension] : "application/octet-stream";
             ParseRanges();
         }
 

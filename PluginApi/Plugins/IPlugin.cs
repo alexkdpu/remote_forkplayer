@@ -2,6 +2,6 @@
 
 namespace RemoteFork.Plugins {
     public interface IPlugin {
-        Response GetList(IPluginContext context);
+        Playlist GetList(IPluginContext context);
     }
 }

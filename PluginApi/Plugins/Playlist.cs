@@ -3,9 +3,9 @@ using RemoteFork.Plugins;
 
 namespace PluginApi.Plugins
 {
-    public class Response
+    public class Playlist
     {
-        public static readonly Response EmptyResponse = new Response
+        public static readonly Playlist EmptyPlaylist = new Playlist
         {
             Items = new Item[0]
         };
