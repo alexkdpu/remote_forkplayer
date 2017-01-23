@@ -24,7 +24,7 @@ namespace RemoteFork.Server {
             return sb.ToString();
         }
 
-        public static string ToJson(Response pluginResponse) {
+        public static string ToJson(Playlist pluginResponse) {
             var json = new JObject();
 
             if (pluginResponse.Items != null && pluginResponse.Items.Any()) {
@@ -60,7 +60,7 @@ namespace RemoteFork.Server {
             return json.ToString();
         }
 
-        public static string ToXml(Response pluginResponse) {
+        public static string ToXml(Playlist pluginResponse) {
             var items = ItemsToXml(pluginResponse.Items);
 
             items.AddFirst(new XElement("next_page_url", new XCData(pluginResponse.NextPageUrl ?? string.Empty)));
