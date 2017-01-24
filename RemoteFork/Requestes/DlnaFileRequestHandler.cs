@@ -158,11 +158,6 @@ namespace RemoteFork.Requestes {
         private static bool ValidateRanges(FileRequest fileRequest, HttpListenerResponse response) {
             var fileLength = fileRequest.File.Length;
 
-            if (fileLength > int.MaxValue) {
-                response.StatusCode = HttpStatusCode.PayloadTooLarge.ToInteger();
-                return false;
-            }
-
             for (var i = 0; i < fileRequest.RangesStartIndexes.Length; i++) {
                 if ((fileRequest.RangesStartIndexes[i] > fileLength - 1)
                     || (fileRequest.RangesEndIndexes[i] > fileLength - 1)
@@ -342,7 +337,7 @@ namespace RemoteFork.Requestes {
             var contentLength = 0L;
 
             for (var i = 0; i < RangesStartIndexes.Length; i++) {
-                contentLength += Convert.ToInt32(RangesEndIndexes[i] - RangesStartIndexes[i]) + 1;
+                contentLength += Convert.ToInt64(RangesEndIndexes[i] - RangesStartIndexes[i]) + 1;
 
                 if (MultipartRequest) {
                     contentLength +=
