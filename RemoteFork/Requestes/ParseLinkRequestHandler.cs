@@ -16,35 +16,37 @@ namespace RemoteFork.Requestes {
 
             var requestStrings = System.Web.HttpUtility.UrlDecode(request.RawUrl)?.Substring(UrlPath.Length + 1).Split('|');
 
-            Log.Debug(m => m("Parsing: {0}", requestStrings[0]));
+            if (requestStrings != null) {
+                Log.Debug(m => m("Parsing: {0}", requestStrings[0]));
 
-            var curlResponse = requestStrings[0].StartsWith("curl")
-                ? CurlRequest(requestStrings[0])
-                : HttpUtility.GetRequest(requestStrings[0]);
+                var curlResponse = requestStrings[0].StartsWith("curl")
+                    ? CurlRequest(requestStrings[0])
+                    : HttpUtility.GetRequest(requestStrings[0]);
 
-            if (requestStrings.Length == 1) {
-                result = curlResponse;
-            } else {
-                if (!requestStrings[1].Contains(".*?")) {
-                    if (string.IsNullOrEmpty(requestStrings[1]) && string.IsNullOrEmpty(requestStrings[2])) {
-                        result = curlResponse;
-                    } else {
-                        var num1 = curlResponse.IndexOf(requestStrings[1], StringComparison.Ordinal);
-                        if (num1 == -1) {
-                            result = string.Empty;
-                        } else {
-                            num1 += requestStrings[1].Length;
-                            var num2 = curlResponse.IndexOf(requestStrings[2], num1, StringComparison.Ordinal);
-                            result = num2 == -1 ? string.Empty : curlResponse.Substring(num1, num2 - num1);
-                        }
-                    }
+                if (requestStrings.Length == 1) {
+                    result = curlResponse;
                 } else {
-                    Log.Debug(m => m("ParseLinkRequest: {0}", requestStrings[1] + "(.*?)" + requestStrings[2]));
+                    if (!requestStrings[1].Contains(".*?")) {
+                        if (string.IsNullOrEmpty(requestStrings[1]) && string.IsNullOrEmpty(requestStrings[2])) {
+                            result = curlResponse;
+                        } else {
+                            var num1 = curlResponse.IndexOf(requestStrings[1], StringComparison.Ordinal);
+                            if (num1 == -1) {
+                                result = string.Empty;
+                            } else {
+                                num1 += requestStrings[1].Length;
+                                var num2 = curlResponse.IndexOf(requestStrings[2], num1, StringComparison.Ordinal);
+                                result = num2 == -1 ? string.Empty : curlResponse.Substring(num1, num2 - num1);
+                            }
+                        }
+                    } else {
+                        Log.Debug(m => m("ParseLinkRequest: {0}", requestStrings[1] + "(.*?)" + requestStrings[2]));
 
-                    var pattern = requestStrings[1] + "(.*?)" + requestStrings[2];
-                    var regex = new Regex(pattern, RegexOptions.Multiline);
-                    var match = regex.Match(curlResponse);
-                    if (match.Success) result = match.Groups[1].Captures[0].ToString();
+                        var pattern = requestStrings[1] + "(.*?)" + requestStrings[2];
+                        var regex = new Regex(pattern, RegexOptions.Multiline);
+                        var match = regex.Match(curlResponse);
+                        if (match.Success) result = match.Groups[1].Captures[0].ToString();
+                    }
                 }
             }
 
