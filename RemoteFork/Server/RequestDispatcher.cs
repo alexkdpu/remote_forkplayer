@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Web;
 using Common.Logging;
 using RemoteFork.Properties;
 using RemoteFork.Requestes;
@@ -62,7 +63,7 @@ namespace RemoteFork.Server {
         }
 
         private bool Handle(HttpListenerContext context) {
-            Log.Debug(m => m("Processing url: {0}", context.Request.RawUrl));
+            Log.Debug(m => m("Processing url: {0}", HttpUtility.UrlDecode(context.Request.RawUrl)));
 
             context.Response.Headers.Add("Server", $"RemoteFork/{Assembly.GetExecutingAssembly().GetName().Version}");
 
@@ -81,9 +82,9 @@ namespace RemoteFork.Server {
                     context.Response.StatusCode = HttpStatusCode.InternalServerError.ToInteger();
                 }
             } else {
-                Log.Debug(m => m("Resource not found: {0}", context.Request.RawUrl));
+                Log.Debug(m => m("Resource not found: {0}", HttpUtility.UrlDecode(context.Request.RawUrl)));
 
-                BaseRequestHandler.WriteResponse(context.Response, HttpStatusCode.NotFound, $"Resource not found: {context.Request.RawUrl}");
+                BaseRequestHandler.WriteResponse(context.Response, HttpStatusCode.NotFound, $"Resource not found: {HttpUtility.UrlDecode(context.Request.RawUrl)}");
             }
 
             return true;

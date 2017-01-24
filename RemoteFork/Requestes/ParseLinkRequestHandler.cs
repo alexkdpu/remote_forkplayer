@@ -14,7 +14,7 @@ namespace RemoteFork.Requestes {
         public override void Handle(HttpListenerRequest request, HttpListenerResponse response) {
             var result = string.Empty;
 
-            var requestStrings = request.RawUrl.Substring(UrlPath.Length + 1).Split('|');
+            var requestStrings = System.Web.HttpUtility.UrlDecode(request.RawUrl)?.Substring(UrlPath.Length + 1).Split('|');
 
             Log.Debug(m => m("Parsing: {0}", requestStrings[0]));
 
@@ -52,7 +52,8 @@ namespace RemoteFork.Requestes {
         }
 
         public string CurlRequest(string text) {
-            string result; bool verbose = text.IndexOf(" -i", StringComparison.Ordinal) > 0;
+            string result;
+            var verbose = text.IndexOf(" -i", StringComparison.Ordinal) > 0;
 
             var url = Regex.Match(text, "(?:\")(.*?)(?=\")").Groups[1].Value;
             var matches = Regex.Matches(text, "(?:-H\\s\")(.*?)(?=\")");
@@ -75,6 +76,7 @@ namespace RemoteFork.Requestes {
                 result = HttpUtility.PostRequest(url, data, header, verbose);
             } else {
                 Log.Info(url);
+
                 result = HttpUtility.GetRequest(url, header, verbose);
             }
 
