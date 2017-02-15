@@ -30,15 +30,26 @@ namespace RemoteFork.Plugins {
                 IncludeDebugInformation = true
             };
 
-            compilerParameters.ReferencedAssemblies.Add(Assembly.GetExecutingAssembly().Location);
+            compilerParameters.ReferencedAssemblies.Add(Assembly.GetAssembly(typeof(IPlugin)).Location);
             compilerParameters.ReferencedAssemblies.Add("System.dll");
             compilerParameters.ReferencedAssemblies.Add("System.Core.dll");
 
             var result = codeProvider.CompileAssemblyFromFile(compilerParameters, sourceFile);
 
-            var assembly = result.CompiledAssembly;
+            var hasCompileErrors = false;
+            foreach (CompilerError ce in result.Errors) {
+                Log.Debug(m => m("{0}({1},{2}): {3} {4}: {5}", ce.FileName, ce.Line, ce.Column, ce.IsWarning ? "warning" : "error", ce.ErrorNumber, ce.ErrorText));
 
-            return assembly;
+                if (!ce.IsWarning) {
+                    hasCompileErrors = true;
+                }
+            }
+
+            if (hasCompileErrors) {
+                throw new ApplicationException("Compile errors occured, see debug log for more details.");
+            }
+
+            return result.CompiledAssembly;
         }
 
         private void LoadPlugins() {
@@ -57,7 +68,7 @@ namespace RemoteFork.Plugins {
                 try {
                     LoadAssembly(Assembly.LoadFrom(file.FullName), GetChecksum(file.FullName));
                 } catch (Exception e) {
-                    Log.Debug(m => m("LoadPlugins->{0}: {1}", file, e));
+                    Log.Error(m => m("LoadPlugins->{0}: {1}", file, e));
                 }
             }
         }
@@ -69,7 +80,7 @@ namespace RemoteFork.Plugins {
                 try {
                     LoadAssembly(CompileAssembly(file), GetChecksum(file));
                 } catch (Exception ex) {
-                    Log.Debug(m => m("LoadPlugins->{0}: {1}", file, ex));
+                    Log.Error(m => m("LoadPlugins->{0}: {1}", file, ex));
                 }
             }
         }
@@ -80,7 +91,7 @@ namespace RemoteFork.Plugins {
                     var attributes = type.GetCustomAttributes(true);
 
                     if (attributes.Length > 0) {
-                        var attribute = (PluginAttribute) attributes.FirstOrDefault(i => i.GetType() == typeof(PluginAttribute));
+                        var attribute = (PluginAttribute)attributes.FirstOrDefault(i => i.GetType() == typeof(PluginAttribute));
                         if (attribute != null) {
                             var plugin = new PluginInstance(hash, assembly, type, attribute);
                             if (!plugins.ContainsKey(plugin.Id)) {
