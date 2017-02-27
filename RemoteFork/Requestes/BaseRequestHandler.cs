@@ -13,11 +13,19 @@ namespace RemoteFork.Requestes {
         private static readonly ILog Log = LogManager.GetLogger(typeof(BaseRequestHandler));
 
         public virtual void Handle(HttpListenerContext context) {
+            Console.WriteLine("SET DEFAULT HEADERS");
             SetDefaultReponseHeaders(context.Response);
 
             Handle(context.Request, context.Response);
         }
-
+        public virtual void Handle(HttpListenerContext context,bool datatype) {                
+            if (!datatype)
+            {
+                SetDefaultReponseHeaders(context.Response);
+            }
+            else Console.WriteLine("NO DEFAULT HEADERS");
+            Handle(context.Request, context.Response);
+        }
         public virtual void Handle(HttpListenerRequest request, HttpListenerResponse response) { }
 
         protected virtual void SetDefaultReponseHeaders(HttpListenerResponse response) {

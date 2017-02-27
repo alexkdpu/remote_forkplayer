@@ -11,6 +11,7 @@ namespace RemoteFork.Requestes {
             var rawUrl = HttpUtility.UrlDecode(request.RawUrl);
 
             if (rawUrl != null && rawUrl.IndexOf('|') > 0) {
+                Properties.Settings.Default.proxy = false;
                 var device = rawUrl.Replace("/test?", "");
 
                 if (!Main.Devices.Contains(device)) {

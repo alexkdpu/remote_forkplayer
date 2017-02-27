@@ -4,8 +4,60 @@ using System.Text.RegularExpressions;
 using Common.Logging;
 using RemoteFork.Network;
 using Unosquare.Net;
+using System.Collections.Generic;
 
 namespace RemoteFork.Requestes {
+
+    internal class ProxyM3u8 : BaseRequestHandler
+    {
+        internal static readonly string UrlPath = "/proxym3u8";
+
+        public override void Handle(HttpListenerRequest request, HttpListenerResponse response)
+        {
+            var result = string.Empty;
+            var url = System.Web.HttpUtility.UrlDecode(request.RawUrl)?.Substring(UrlPath.Length);
+            var ts = "";
+            Dictionary<string, string> header = new Dictionary<string, string>();
+            Console.WriteLine("Proxy url: " + url);
+            if (url.IndexOf("OPT:") > 0)
+            {
+                if (url.IndexOf("OPEND:/") == url.Length - 7)
+                {
+                    url = url.Replace("OPEND:/", "");
+                    Console.WriteLine("Req root m3u8 " + url);
+                }
+                else
+                {
+                    ts=url.Substring(url.IndexOf("OPEND:/") + 7);
+                    Console.WriteLine("Req m3u8 ts " + ts);
+                }
+                if (url.IndexOf("OPEND:/")>0) url=url.Substring(0, url.IndexOf("OPEND:/"));
+                var Headers = url.Substring(url.IndexOf("OPT:") + 4).Replace("--", "|").Split('|');
+                url = url.Substring(0, url.IndexOf("OPT:"));
+                Console.WriteLine("Real url:"+url);
+                for(var i = 0; i < Headers.Length; i++)
+                {
+                    header[Headers[i]] = Headers[++i];
+                    Console.WriteLine(Headers[i-1]+"="+Headers[i]);
+                }
+            }
+            if (ts != "")
+            {
+                url = url.Substring(0, url.LastIndexOf("/") + 1) + ts;
+                Console.WriteLine("Full ts url " + url);
+                response.ContentType= "video/mp2t";
+
+            }
+            else response.ContentType = "application/vnd.apple.mpegurl";
+            response.Headers.Remove("Tranfer-Encoding");
+            response.Headers.Remove("Keep-Alive");
+           // response.AddHeader("Accept-Ranges", "bytes");
+
+            HttpUtility.GetByteRequest(response, url, header, false, true);
+           //WriteResponse(response, result);
+        }
+    }
+
     internal class ParseLinkRequestHandler : BaseRequestHandler {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ParseLinkRequestHandler));
 

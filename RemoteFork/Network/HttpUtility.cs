@@ -14,7 +14,69 @@ namespace RemoteFork.Network {
         private static readonly CookieContainer CookieContainer = new CookieContainer();
         private static bool _clearCookies;
 
-        public static string GetRequest(string link, Dictionary<string, string> header = null, bool verbose = false) {
+        public static void GetByteRequest(Unosquare.Net.HttpListenerResponse output, string link, Dictionary<string, string> header = null, bool verbose = false, bool databyte = false)
+        {
+            try
+            {
+                _clearCookies = false;
+                if (header != null)
+                {
+                    foreach (var entry in header)
+                    {
+                        Log.Info(entry.ToString());
+                        if (entry.Key == "Cookie")
+                        {
+                            _clearCookies = true;
+                            CookieContainer.SetCookies(new Uri(link), entry.Value.Replace(";", ","));
+                        }
+                    }
+                }
+                for (var i = 0; i < 3; i++)
+                {
+                    try
+                    {
+                        using (var handler = new HttpClientHandler())
+                        {
+                            SetHandler(handler);
+                            using (var httpClient = new HttpClient(handler))
+                            {
+                                AddHeader(httpClient, header);
+                                var response = httpClient.GetAsync(link).Result;
+                                if (_clearCookies)
+                                {
+                                    var cookies = handler.CookieContainer.GetCookies(new Uri(link));
+                                    foreach (Cookie co in cookies)
+                                    {
+                                        co.Expires = DateTime.Now.Subtract(TimeSpan.FromDays(1));
+                                    }
+                                }
+                                Log.Info("return get headers=" + verbose);
+
+                                //return response.ToString();
+                                var r = response.Content.ReadAsByteArrayAsync().Result;
+                                Console.WriteLine("Len i="+i+" " + r.Length);
+                                if (r.Length > 0)
+                                {
+                                    output.ContentLength64 = r.Length;
+                                    output.OutputStream.Write(r, 0, r.Length);
+                                    break;
+                                }
+
+                            }
+                        }
+                    }
+                    catch (Exception e) {
+                        Console.WriteLine("Err i="+i+" " + e.ToString());
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(m => m("HttpUtility->GetRequest: {0}", ex.Message));
+                
+            }
+        }
+        public static string GetRequest(string link, Dictionary<string, string> header = null, bool verbose = false, bool databyte=false) {
             try {
                 _clearCookies = false;
                 if (header != null) {
@@ -42,7 +104,7 @@ namespace RemoteFork.Network {
                         if (verbose) {
                             return string.Format("{0}\n{1}", response.Headers, ReadContext(response.Content));
                         } else {
-                            return ReadContext(response.Content);
+                            return ReadContext(response.Content, databyte);
                         }
                     }
                 }
@@ -103,6 +165,7 @@ namespace RemoteFork.Network {
             if (header != null) {
                 foreach (var h in header) {
                     try {
+                        Console.WriteLine(h.Key + "=" + h.Value);
                         httpClient.DefaultRequestHeaders.TryAddWithoutValidation(h.Key, h.Value);
                     } catch (Exception ex) {
                         Log.Debug(m => m("HttpUtility->AddHeader: {0}", ex.Message));
@@ -113,7 +176,8 @@ namespace RemoteFork.Network {
             }
         }
 
-        private static string ReadContext(HttpContent context) {
+        private static string ReadContext(HttpContent context, bool databyte = false) {
+                
             try {
                 return context.ReadAsStringAsync().Result;
             } catch (Exception e) {

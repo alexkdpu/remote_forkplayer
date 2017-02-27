@@ -11,13 +11,14 @@ using RemoteFork.Network;
 using RemoteFork.Plugins;
 using RemoteFork.Properties;
 using RemoteFork.Server;
+using System.Text.RegularExpressions;
 
 namespace RemoteFork.Forms {
     internal partial class Main : Form {
         private static readonly ILog Log = LogManager.GetLogger(typeof(Main));
 
         public static HashSet<string> Devices = new HashSet<string>();
-
+        private bool loading=true;
         private HttpServer _httpServer;
         private Process thvpid;
 
@@ -32,6 +33,7 @@ namespace RemoteFork.Forms {
             cbAutoStart.Checked = Settings.Default.ServerAutoStart;
             cbDlna.Checked = Settings.Default.Dlna;
             tbPort.Text = Settings.Default.Port.ToString();
+            checkBoxProxy.Checked = Settings.Default.proxy;
 
             object[] ipAddresses = Tools.GetIPAddresses();
             cbIp.Items.AddRange(ipAddresses);
@@ -57,6 +59,7 @@ namespace RemoteFork.Forms {
             thvpAutoStart.Checked = Settings.Default.THVPAutoStart;
 
             tbUserAgent.Text = Settings.Default.UserAgent;
+            loading = false;
         }
 
         #endregion Settings
@@ -130,15 +133,31 @@ namespace RemoteFork.Forms {
 
             RegisterServer();
         }
-
+        private string urlnewversion = "";
+        private string newversion = "";
         private void RegisterServer() {
+            toolStripStatusLabel1.Text = "Регистрация сервера...";
             var result = HttpUtility.GetRequest(
                 string.Format(
-                    "http://getlist2.obovse.ru/remote/index.php?v={0}&do=list&localip={1}:{2}",
+                    "http://getlist2.obovse.ru/remote/index.php?v={0}&do=list&localip={1}:{2}&proxy={3}",
                     Assembly.GetExecutingAssembly().GetName().Version,
                     cbIp.SelectedItem,
-                    tbPort.Text));
-
+                    tbPort.Text, checkBoxProxy.Checked));
+            Console.WriteLine(string.Format(
+                    "http://getlist2.obovse.ru/remote/index.php?v={0}&do=list&localip={1}:{2}&proxy={3}",
+                    Assembly.GetExecutingAssembly().GetName().Version,
+                    cbIp.SelectedItem,
+                    tbPort.Text, checkBoxProxy.Checked));
+            if(result.Split('|')[0]== "new_version")
+            {
+                MenuItemNewVersion.Text = result.Split('|')[1];
+                MenuItemNewVersion.Visible = true;
+                urlnewversion = result.Split('|')[2];
+                newversion= result.Split('|')[3];
+            }
+            if (checkBoxProxy.Checked) timerR.Enabled = true;
+            else timerR.Enabled = false;
+            toolStripStatusLabel1.Text = "Регистрация сервера: OK";
             Log.Debug(m => m("StartServer->Result: {0}", result));
         }
 
@@ -373,5 +392,117 @@ namespace RemoteFork.Forms {
         }
 
         #endregion
+
+        private void checkBoxProxy_CheckedChanged(object sender, EventArgs e)
+        {
+            if (loading) return;
+            if (checkBoxProxy.Checked)
+            {
+                if (MessageBox.Show("Включение не рекомендуется: \n-увеличится время ответа от ForkPlayer к RemoteFork на 20-30сек.\n-не будет работать доступ к файлам вашего ПК и плагины\n-не будет работать THVP bittorrent\n-не будет работать обработка некоторых ресурсов (трее тв, moonwalk)", "Включить работу через Proxy", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                {
+                    checkBoxProxy.Checked = false;
+                    return;
+                }
+                else
+                {
+                    RegisterServer();
+                }             
+            }
+            Settings.Default.proxy = checkBoxProxy.Checked;
+            Settings.Default.Save();
+        }
+
+        private void MenuItemNewVersion_Click(object sender, EventArgs e)
+        {
+            //Process.Start(urlnewversion);
+            ShowForm();
+            toolStripStatusLabel1.Text = "Скачивание новой версии";
+            WebClient myWebClient = new WebClient();
+            myWebClient.DownloadFile(urlnewversion, Environment.CurrentDirectory+"\\UnpackNewVersion"+newversion+"AndReplaceFiles.zip");
+            toolStripStatusLabel1.Text = "Выполнено скачивание!";
+            Process.Start(Environment.CurrentDirectory);
+        }
+
+        private void timerR_Tick(object sender, EventArgs e)
+        {
+            if (!Properties.Settings.Default.proxy)
+            {
+                checkBoxProxy.Checked = false;
+                toolStripStatusLabel1.Text = "Внешний сервер отключен";
+                timerR.Enabled = false;
+                return;
+            }
+            toolStripStatusLabel1.Text += "...";
+            Console.WriteLine("timer");
+            var result = HttpUtility.GetRequest("http://195.88.208.101/obovse.ru/smarttv/api.php?do=xhrremote2&direct&proxy=1&v=get");
+            Console.WriteLine(result);
+            if (result.IndexOf("/parserlink") == 0)
+            {
+                Console.WriteLine("parserlink remote");
+                var result2 = string.Empty;
+
+                var requestStrings = System.Web.HttpUtility.UrlDecode(result.Substring(12)).Split('|');
+                var Handle = new Requestes.ParseLinkRequestHandler();
+                if (requestStrings != null)
+                {
+                    Console.WriteLine("Parsing: {0}", requestStrings[0]);
+
+                    var curlResponse = requestStrings[0].StartsWith("curl")
+                        ? Handle.CurlRequest(System.Web.HttpUtility.UrlDecode(requestStrings[0]))
+                        : HttpUtility.GetRequest(requestStrings[0]);
+                    Console.WriteLine("Response original " + curlResponse);
+                    if (requestStrings.Length == 1)
+                    {
+                        result2 = curlResponse;
+                    }
+                    else
+                    {
+                        requestStrings[1] = System.Web.HttpUtility.UrlDecode(requestStrings[1]);
+                        requestStrings[2] = System.Web.HttpUtility.UrlDecode(requestStrings[2]);
+                        Console.WriteLine("1: {0}", requestStrings[1]);
+                        Console.WriteLine("2: {0}", requestStrings[2]);
+                        if (!requestStrings[1].Contains(".*?"))
+                        {
+                            if (string.IsNullOrEmpty(requestStrings[1]) && string.IsNullOrEmpty(requestStrings[2]))
+                            {
+                                result2 = curlResponse;
+                            }
+                            else
+                            {
+                                var num1 = curlResponse.IndexOf(requestStrings[1], StringComparison.Ordinal);
+                                if (num1 == -1)
+                                {
+                                    result2 = string.Empty;
+                                }
+                                else
+                                {
+                                    num1 += requestStrings[1].Length;
+                                    var num2 = curlResponse.IndexOf(requestStrings[2], num1, StringComparison.Ordinal);
+                                    result2 = num2 == -1 ? string.Empty : curlResponse.Substring(num1, num2 - num1);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Log.Debug(m => m("ParseLinkRequest: {0}", requestStrings[1] + "(.*?)" + requestStrings[2]));
+                            Console.WriteLine("ParseLinkRequest: {0}", requestStrings[1] + "(.*?)" + requestStrings[2]);
+
+                            var pattern = requestStrings[1] + "(.*?)" + requestStrings[2];
+                            var regex = new Regex(pattern, RegexOptions.Multiline);
+                            var match = regex.Match(curlResponse);
+                            if (match.Success) result2 = match.Groups[1].Captures[0].ToString();
+                        }
+                    }
+                    Console.WriteLine("result="+result2);
+                    var xu = "http://195.88.208.101/obovse.ru/smarttv/api.php?do=xhrremote2&proxy=1&v=post&u=" + System.Web.HttpUtility.UrlEncode(result);
+                    Console.WriteLine(xu);
+                    Dictionary<string, string> s=new Dictionary<string, string>();
+                    s["s"] = result2;
+                    Console.WriteLine("answ="+HttpUtility.PostRequest(xu, s));
+                }
+            }
+
+            toolStripStatusLabel1.Text = toolStripStatusLabel1.Text.Replace("...", "");
+        }
     }
 }

@@ -29,6 +29,7 @@
             this.runToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gotoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.playUrlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItemNewVersion = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.bStartServer = new System.Windows.Forms.Button();
@@ -46,6 +47,8 @@
             this.label3 = new System.Windows.Forms.Label();
             this.tbUserAgent = new System.Windows.Forms.TextBox();
             this.thvpAutoStart = new System.Windows.Forms.CheckBox();
+            this.checkBoxProxy = new System.Windows.Forms.CheckBox();
+            this.timerR = new System.Windows.Forms.Timer(this.components);
             this.contextMenuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -128,7 +131,8 @@
             this.playUrlToolStripMenuItem,
             this.openTestToolStripMenuItem,
             this.settingsToolStripMenuItem,
-            this.exitToolStripMenuItem});
+            this.exitToolStripMenuItem,
+            this.MenuItemNewVersion});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.Size = new System.Drawing.Size(221, 180);
             // 
@@ -179,6 +183,14 @@
             this.playUrlToolStripMenuItem.Text = "Пользовательские ссылки";
             this.playUrlToolStripMenuItem.Click += new System.EventHandler(this.playUrlToolStripMenuItem_Click);
             // 
+            // MenuItemNewVersion
+            // 
+            this.MenuItemNewVersion.Name = "MenuItemNewVersion";
+            this.MenuItemNewVersion.Size = new System.Drawing.Size(220, 22);
+            this.MenuItemNewVersion.Text = "Скачать новую версию!";
+            this.MenuItemNewVersion.Visible = false;
+            this.MenuItemNewVersion.Click += new System.EventHandler(this.MenuItemNewVersion_Click);
+            // 
             // notifyIcon1
             // 
             this.notifyIcon1.ContextMenuStrip = this.contextMenuStrip1;
@@ -216,7 +228,7 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 267);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 281);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(217, 22);
             this.statusStrip1.TabIndex = 19;
@@ -303,7 +315,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(9, 215);
+            this.label2.Location = new System.Drawing.Point(9, 235);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(74, 13);
             this.label2.TabIndex = 22;
@@ -317,7 +329,7 @@
             "Информация",
             "Ошибки",
             "Отладка"});
-            this.cbLogs.Location = new System.Drawing.Point(89, 212);
+            this.cbLogs.Location = new System.Drawing.Point(89, 232);
             this.cbLogs.Name = "cbLogs";
             this.cbLogs.Size = new System.Drawing.Size(111, 21);
             this.cbLogs.TabIndex = 23;
@@ -326,7 +338,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(9, 243);
+            this.label3.Location = new System.Drawing.Point(9, 263);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(60, 13);
             this.label3.TabIndex = 24;
@@ -334,7 +346,7 @@
             // 
             // tbUserAgent
             // 
-            this.tbUserAgent.Location = new System.Drawing.Point(89, 240);
+            this.tbUserAgent.Location = new System.Drawing.Point(89, 260);
             this.tbUserAgent.Name = "tbUserAgent";
             this.tbUserAgent.Size = new System.Drawing.Size(111, 20);
             this.tbUserAgent.TabIndex = 25;
@@ -354,11 +366,28 @@
             this.thvpAutoStart.UseVisualStyleBackColor = true;
             this.thvpAutoStart.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
+            // checkBoxProxy
+            // 
+            this.checkBoxProxy.AutoSize = true;
+            this.checkBoxProxy.Location = new System.Drawing.Point(12, 213);
+            this.checkBoxProxy.Name = "checkBoxProxy";
+            this.checkBoxProxy.Size = new System.Drawing.Size(144, 17);
+            this.checkBoxProxy.TabIndex = 27;
+            this.checkBoxProxy.Text = "Через внешний сервер";
+            this.checkBoxProxy.UseVisualStyleBackColor = true;
+            this.checkBoxProxy.CheckedChanged += new System.EventHandler(this.checkBoxProxy_CheckedChanged);
+            // 
+            // timerR
+            // 
+            this.timerR.Interval = 5000;
+            this.timerR.Tick += new System.EventHandler(this.timerR_Tick);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(217, 275);
+            this.ClientSize = new System.Drawing.Size(217, 303);
+            this.Controls.Add(this.checkBoxProxy);
             this.Controls.Add(this.thvpAutoStart);
             this.Controls.Add(this.tbUserAgent);
             this.Controls.Add(this.label3);
@@ -425,5 +454,8 @@
         private System.Windows.Forms.ToolStripMenuItem runToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem gotoToolStripMenuItem;
         private System.Windows.Forms.CheckBox thvpAutoStart;
+        private System.Windows.Forms.CheckBox checkBoxProxy;
+        private System.Windows.Forms.ToolStripMenuItem MenuItemNewVersion;
+        private System.Windows.Forms.Timer timerR;
     }
 }

@@ -82,9 +82,25 @@ namespace RemoteFork.Server {
                     context.Response.StatusCode = HttpStatusCode.InternalServerError.ToInteger();
                 }
             } else {
-                Log.Debug(m => m("Resource not found: {0}", HttpUtility.UrlDecode(context.Request.RawUrl)));
+                context.Response.Headers.Add(Constants.HeaderAccessControlAllowOrigin);
+                if (context.Request.RawUrl.IndexOf("/proxym3u8") == 0)
+                {
+                    Console.WriteLine("Proxy m3u8:" + context.Request.RawUrl);
+                    context.Response.StatusCode = HttpStatusCode.Ok.ToInteger();
+                    var Handler = new ProxyM3u8();
+                    Handler.Handle(context,true);
+                  
 
-                BaseRequestHandler.WriteResponse(context.Response, HttpStatusCode.NotFound, $"Resource not found: {HttpUtility.UrlDecode(context.Request.RawUrl)}");
+                }
+                else
+                {
+                    Console.WriteLine("URL:" + context.Request.RawUrl);
+
+                    Log.Debug(m => m("Resource not found: {0}", HttpUtility.UrlDecode(context.Request.RawUrl)));
+
+                    BaseRequestHandler.WriteResponse(context.Response, HttpStatusCode.NotFound, $"Resource Not found: {HttpUtility.UrlDecode(context.Request.RawUrl)}");
+
+                }
             }
 
             return true;
