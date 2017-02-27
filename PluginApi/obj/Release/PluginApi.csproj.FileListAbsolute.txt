@@ -1,0 +1,9 @@
+C:\vsproject\remote_forkplayer-master_1.3\PluginApi\bin\Release\PluginApi.dll
+C:\vsproject\remote_forkplayer-master_1.3\PluginApi\bin\Release\PluginApi.pdb
+C:\vsproject\remote_forkplayer-master_1.3\PluginApi\obj\Release\PluginApi.dll
+C:\vsproject\remote_forkplayer-master_1.3\PluginApi\obj\Release\PluginApi.pdb
+C:\vsproject\remote_forkplayer-master_1.3\PluginApi\obj\Release\PluginApi.csprojResolveAssemblyReference.cache
+C:\vsproject\remote_forkplayer-master_1.3 — копия\PluginApi\bin\Release\PluginApi.dll
+C:\vsproject\remote_forkplayer-master_1.3 — копия\PluginApi\bin\Release\PluginApi.pdb
+C:\vsproject\remote_forkplayer-master_1.3 — копия\PluginApi\obj\Release\PluginApi.dll
+C:\vsproject\remote_forkplayer-master_1.3 — копия\PluginApi\obj\Release\PluginApi.pdb
