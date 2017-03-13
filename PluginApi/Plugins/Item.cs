@@ -4,6 +4,8 @@
         public string Link;
         public string ImageLink;
         public string Description;
+        public string GetInfo;
+        public string SearchOn;
         public ItemType Type = ItemType.DIRECTORY;
 
         public Item() {
@@ -13,6 +15,8 @@
 
             Name = item.Name;
             Link = item.Link;
+            GetInfo = item.GetInfo;
+            SearchOn = item.SearchOn;
             ImageLink = item.ImageLink;
             Description = item.Description;
             Type = item.Type;
