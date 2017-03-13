@@ -68,7 +68,7 @@
             this.cbDlna.AutoSize = true;
             this.cbDlna.Checked = true;
             this.cbDlna.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbDlna.Location = new System.Drawing.Point(12, 169);
+            this.cbDlna.Location = new System.Drawing.Point(12, 164);
             this.cbDlna.Name = "cbDlna";
             this.cbDlna.Size = new System.Drawing.Size(94, 17);
             this.cbDlna.TabIndex = 5;
@@ -205,7 +205,7 @@
             // 
             // bStartServer
             // 
-            this.bStartServer.Location = new System.Drawing.Point(12, 12);
+            this.bStartServer.Location = new System.Drawing.Point(12, 7);
             this.bStartServer.Name = "bStartServer";
             this.bStartServer.Size = new System.Drawing.Size(94, 23);
             this.bStartServer.TabIndex = 0;
@@ -216,7 +216,7 @@
             // bStopServer
             // 
             this.bStopServer.Enabled = false;
-            this.bStopServer.Location = new System.Drawing.Point(112, 12);
+            this.bStopServer.Location = new System.Drawing.Point(112, 7);
             this.bStopServer.Name = "bStopServer";
             this.bStopServer.Size = new System.Drawing.Size(94, 23);
             this.bStopServer.TabIndex = 1;
@@ -228,7 +228,7 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 281);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 284);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(217, 22);
             this.statusStrip1.TabIndex = 19;
@@ -246,12 +246,13 @@
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.IP);
             this.groupBox1.Controls.Add(this.tbPort);
-            this.groupBox1.Location = new System.Drawing.Point(12, 84);
+            this.groupBox1.Location = new System.Drawing.Point(12, 79);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(194, 79);
             this.groupBox1.TabIndex = 20;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "IP:PORT";
+            this.groupBox1.Enter += new System.EventHandler(this.groupBox1_Enter);
             // 
             // cbIp
             // 
@@ -267,7 +268,7 @@
             this.cbAutoStart.AutoSize = true;
             this.cbAutoStart.Checked = true;
             this.cbAutoStart.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbAutoStart.Location = new System.Drawing.Point(12, 41);
+            this.cbAutoStart.Location = new System.Drawing.Point(12, 36);
             this.cbAutoStart.Name = "cbAutoStart";
             this.cbAutoStart.Size = new System.Drawing.Size(143, 17);
             this.cbAutoStart.TabIndex = 5;
@@ -278,7 +279,7 @@
             // llDlnaConfigurate
             // 
             this.llDlnaConfigurate.AutoSize = true;
-            this.llDlnaConfigurate.Location = new System.Drawing.Point(145, 170);
+            this.llDlnaConfigurate.Location = new System.Drawing.Point(145, 165);
             this.llDlnaConfigurate.Name = "llDlnaConfigurate";
             this.llDlnaConfigurate.Size = new System.Drawing.Size(61, 13);
             this.llDlnaConfigurate.TabIndex = 21;
@@ -292,7 +293,7 @@
             this.cbPlugins.AutoSize = true;
             this.cbPlugins.Checked = true;
             this.cbPlugins.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbPlugins.Location = new System.Drawing.Point(12, 192);
+            this.cbPlugins.Location = new System.Drawing.Point(12, 187);
             this.cbPlugins.Name = "cbPlugins";
             this.cbPlugins.Size = new System.Drawing.Size(71, 17);
             this.cbPlugins.TabIndex = 5;
@@ -303,7 +304,7 @@
             // llPluginsConfigurate
             // 
             this.llPluginsConfigurate.AutoSize = true;
-            this.llPluginsConfigurate.Location = new System.Drawing.Point(145, 193);
+            this.llPluginsConfigurate.Location = new System.Drawing.Point(145, 188);
             this.llPluginsConfigurate.Name = "llPluginsConfigurate";
             this.llPluginsConfigurate.Size = new System.Drawing.Size(61, 13);
             this.llPluginsConfigurate.TabIndex = 21;
@@ -315,11 +316,12 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(9, 235);
+            this.label2.Location = new System.Drawing.Point(9, 230);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(74, 13);
             this.label2.TabIndex = 22;
             this.label2.Text = "Логирование";
+            this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // cbLogs
             // 
@@ -329,7 +331,7 @@
             "Информация",
             "Ошибки",
             "Отладка"});
-            this.cbLogs.Location = new System.Drawing.Point(89, 232);
+            this.cbLogs.Location = new System.Drawing.Point(89, 227);
             this.cbLogs.Name = "cbLogs";
             this.cbLogs.Size = new System.Drawing.Size(111, 21);
             this.cbLogs.TabIndex = 23;
@@ -338,15 +340,16 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(9, 263);
+            this.label3.Location = new System.Drawing.Point(9, 258);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(60, 13);
             this.label3.TabIndex = 24;
             this.label3.Text = "User-Agent";
+            this.label3.Click += new System.EventHandler(this.label3_Click);
             // 
             // tbUserAgent
             // 
-            this.tbUserAgent.Location = new System.Drawing.Point(89, 260);
+            this.tbUserAgent.Location = new System.Drawing.Point(89, 255);
             this.tbUserAgent.Name = "tbUserAgent";
             this.tbUserAgent.Size = new System.Drawing.Size(111, 20);
             this.tbUserAgent.TabIndex = 25;
@@ -358,7 +361,7 @@
             this.thvpAutoStart.AutoSize = true;
             this.thvpAutoStart.Checked = true;
             this.thvpAutoStart.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.thvpAutoStart.Location = new System.Drawing.Point(12, 62);
+            this.thvpAutoStart.Location = new System.Drawing.Point(12, 57);
             this.thvpAutoStart.Name = "thvpAutoStart";
             this.thvpAutoStart.Size = new System.Drawing.Size(159, 17);
             this.thvpAutoStart.TabIndex = 26;
@@ -369,7 +372,7 @@
             // checkBoxProxy
             // 
             this.checkBoxProxy.AutoSize = true;
-            this.checkBoxProxy.Location = new System.Drawing.Point(12, 213);
+            this.checkBoxProxy.Location = new System.Drawing.Point(12, 208);
             this.checkBoxProxy.Name = "checkBoxProxy";
             this.checkBoxProxy.Size = new System.Drawing.Size(144, 17);
             this.checkBoxProxy.TabIndex = 27;
@@ -386,7 +389,8 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(217, 303);
+            this.ClientSize = new System.Drawing.Size(217, 306);
+            this.ContextMenuStrip = this.contextMenuStrip1;
             this.Controls.Add(this.checkBoxProxy);
             this.Controls.Add(this.thvpAutoStart);
             this.Controls.Add(this.tbUserAgent);

@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using Common.Logging;
 using RemoteFork.Properties;
+using System.Linq;
 
 namespace RemoteFork.Network {
     public static class HttpUtility {
@@ -76,7 +77,7 @@ namespace RemoteFork.Network {
                 
             }
         }
-        public static string GetRequest(string link, Dictionary<string, string> header = null, bool verbose = false, bool databyte=false) {
+        public static string GetRequest(string link, Dictionary<string, string> header = null, bool verbose = false, bool databyte=false, bool autoredirect=true) {
             try {
                 _clearCookies = false;
                 if (header != null) {
@@ -88,7 +89,7 @@ namespace RemoteFork.Network {
                         }
                     }
                 }
-                using (var handler = new HttpClientHandler()) {
+                using (var handler = new HttpClientHandler(){AllowAutoRedirect = autoredirect }) {
                     SetHandler(handler);
                     using (var httpClient = new HttpClient(handler)) {
                         AddHeader(httpClient, header);
@@ -101,21 +102,43 @@ namespace RemoteFork.Network {
                         }
                         Log.Info("return get headers=" + verbose);
                         //return response.ToString();
+                        Console.WriteLine("HEADS");
+                       
                         if (verbose) {
-                            return string.Format("{0}\n{1}", response.Headers, ReadContext(response.Content));
+                            string sh = "";
+                            try
+                            {
+                                var headers = response.Headers.Concat(response.Content.Headers);
+                                
+                                foreach (var i in headers)
+                                {
+                                    foreach (var j in i.Value)
+                                    {
+                                        Console.WriteLine(i.Key + ": " + j);
+                                        sh += i.Key + ": " + j + "\n";
+                                    }
+
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine("Err get headers: " + e.ToString());
+                            }
+                            return string.Format("{0}\n{1}", sh, ReadContext(response.Content));
                         } else {
                             return ReadContext(response.Content, databyte);
                         }
                     }
                 }
             } catch (Exception ex) {
+                Console.WriteLine("HttpUtility->GetRequest: " + ex.ToString());
                 Log.Error(m => m("HttpUtility->GetRequest: {0}", ex.Message));
                 return ex.Message;
             }
         }
 
         public static string PostRequest(string link, Dictionary<string, string> data,
-                                         Dictionary<string, string> header = null, bool verbose = false) {
+                                         Dictionary<string, string> header = null, bool verbose = false, bool autoredirect = true) {
             try {
                 _clearCookies = false;
                 if (header != null) {
@@ -128,13 +151,13 @@ namespace RemoteFork.Network {
                     }
                 }
 
-                using (var handler = new HttpClientHandler()) {
+                using (var handler = new HttpClientHandler() { AllowAutoRedirect = autoredirect }) {
                     SetHandler(handler);
                     using (var httpClient = new HttpClient(handler)) {
                         AddHeader(httpClient, header);
 
                         HttpContent content = new FormUrlEncodedContent(data);
-
+                      
                         var response = httpClient.PostAsync(link, content).Result;
                         if (_clearCookies) {
                             var cookies = handler.CookieContainer.GetCookies(new Uri(link));
@@ -144,7 +167,18 @@ namespace RemoteFork.Network {
                         }
                         Log.Info("return post headers=" + verbose);
                         if (verbose) {
-                            return string.Format("{0}\n{1}", response.Headers, ReadContext(response.Content));
+                            var headers = response.Headers.Concat(response.Content.Headers);
+                            string sh = "";
+                            foreach (var i in headers)
+                            {
+                                foreach (var j in i.Value)
+                                {
+                                    Console.WriteLine(i.Key + ": " + j);
+                                    sh += i.Key + ": " + j + "\n";
+                                }
+
+                            }
+                            return string.Format("{0}\n{1}", sh, ReadContext(response.Content));
                         } else {
                             return ReadContext(response.Content);
                         }

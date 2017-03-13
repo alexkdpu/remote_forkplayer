@@ -5,6 +5,8 @@ using Common.Logging;
 using RemoteFork.Network;
 using Unosquare.Net;
 using System.Collections.Generic;
+using System.Text;
+using System.Diagnostics;
 
 namespace RemoteFork.Requestes {
 
@@ -16,7 +18,9 @@ namespace RemoteFork.Requestes {
         {
             var result = string.Empty;
             var url = System.Web.HttpUtility.UrlDecode(request.RawUrl)?.Substring(UrlPath.Length);
+            if (url.Substring(0, 1) == "B") url = Encoding.UTF8.GetString(Convert.FromBase64String(url.Substring(1,url.Length-2)));
             var ts = "";
+            bool usertype = false;
             Dictionary<string, string> header = new Dictionary<string, string>();
             Console.WriteLine("Proxy url: " + url);
             if (url.IndexOf("OPT:") > 0)
@@ -37,19 +41,28 @@ namespace RemoteFork.Requestes {
                 Console.WriteLine("Real url:"+url);
                 for(var i = 0; i < Headers.Length; i++)
                 {
+                    if(Headers[i]=="ContentType")
+                    {
+                        usertype = true;
+                        response.ContentType = Headers[++i];
+                        continue;
+                    }
                     header[Headers[i]] = Headers[++i];
                     Console.WriteLine(Headers[i-1]+"="+Headers[i]);
                 }
             }
-            if (ts != "")
+            if (!usertype)
             {
-                url = url.Substring(0, url.LastIndexOf("/") + 1) + ts;
-                Console.WriteLine("Full ts url " + url);
-                response.ContentType= "video/mp2t";
+                if (ts != "")
+                {
+                    url = url.Substring(0, url.LastIndexOf("/") + 1) + ts;
+                    Console.WriteLine("Full ts url " + url);
+                    response.ContentType = "video/mp2t";
 
+                }
+                else response.ContentType = "application/vnd.apple.mpegurl";
+                response.Headers.Remove("Tranfer-Encoding");
             }
-            else response.ContentType = "application/vnd.apple.mpegurl";
-            response.Headers.Remove("Tranfer-Encoding");
             response.Headers.Remove("Keep-Alive");
            // response.AddHeader("Accept-Ranges", "bytes");
 
@@ -104,10 +117,36 @@ namespace RemoteFork.Requestes {
 
             WriteResponse(response, result);
         }
-
+        static void OutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
+        {
+            //* Do your stuff with the output (write to console/log/StringBuilder)
+            Console.WriteLine(outLine.Data);
+        }
         public string CurlRequest(string text) {
             string result;
+            if (text.IndexOf("curlorig") == 0)
+            {
+                Console.WriteLine("curlorig "+ text.Substring(9));
+                Process process = new Process();
+                process.StartInfo.FileName = "curlorig.exe";
+                process.StartInfo.Arguments = "/c "+text.Substring(9);
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.RedirectStandardError = true;
+                process.StartInfo.CreateNoWindow = true;
+                //* Set ONLY ONE handler here.
+                process.ErrorDataReceived += new DataReceivedEventHandler(OutputHandler);
+                //* Start process
+                process.Start();
+                //* Read one element asynchronously
+                process.BeginErrorReadLine();
+                //* Read the other one synchronously
+                result = process.StandardOutput.ReadToEnd();
+                process.WaitForExit(45000);
+                return result;
+            }
             var verbose = text.IndexOf(" -i", StringComparison.Ordinal) > 0;
+            var autoredirect = text.IndexOf(" -L", StringComparison.Ordinal) > 0;
 
             var url = Regex.Match(text, "(?:\")(.*?)(?=\")").Groups[1].Value;
             var matches = Regex.Matches(text, "(?:-H\\s\")(.*?)(?=\")");
@@ -127,14 +166,16 @@ namespace RemoteFork.Requestes {
                 var data =
                     dataArray.ToDictionary(value => value.Remove(value.IndexOf("=", StringComparison.Ordinal)),
                         value => value.Substring(value.IndexOf("=", StringComparison.Ordinal) + 1));
-                result = HttpUtility.PostRequest(url, data, header, verbose);
+                result = HttpUtility.PostRequest(url, data, header, verbose,autoredirect);
             } else {
                 Log.Info(url);
 
-                result = HttpUtility.GetRequest(url, header, verbose);
+                result = HttpUtility.GetRequest(url, header, verbose,false, autoredirect);
             }
 
             return result;
         }
     }
+
+   
 }

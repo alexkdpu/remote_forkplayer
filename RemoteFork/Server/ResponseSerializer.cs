@@ -54,6 +54,8 @@ namespace RemoteFork.Server {
                 }
 
                 json["next_page_url"] = pluginResponse.NextPageUrl ?? string.Empty;
+                if(pluginResponse.Timeout!=null) json["timeout"] = pluginResponse.Timeout ?? string.Empty;
+                if(pluginResponse.IsIptv!=null) json["is_iptv"] = pluginResponse.IsIptv ?? string.Empty;
                 json["channels"] = channels;
             }
 
@@ -62,9 +64,11 @@ namespace RemoteFork.Server {
 
         public static string ToXml(Playlist pluginResponse) {
             var items = ItemsToXml(pluginResponse.Items);
-
+            if(pluginResponse.Timeout!=null) items.AddFirst(new XElement("timeout", new XCData(pluginResponse.Timeout ?? string.Empty)));
+            if(pluginResponse.IsIptv!=null)   items.AddFirst(new XElement("is_iptv", new XCData(pluginResponse.IsIptv ?? string.Empty)));
             items.AddFirst(new XElement("next_page_url", new XCData(pluginResponse.NextPageUrl ?? string.Empty)));
-
+            if(pluginResponse.GetInfo!=null) items.AddFirst(new XElement("get_info", new XCData(pluginResponse.GetInfo ?? string.Empty)));
+         
             return XmlToString(
                 new XDocument(
                     new XDeclaration("1.0", "utf-8", "yes"),
@@ -105,6 +109,8 @@ namespace RemoteFork.Server {
                     channel.Add(new XElement("title", new XCData(item.Name ?? string.Empty)));
                     channel.Add(new XElement("description", new XCData(item.Description ?? string.Empty)));
                     channel.Add(new XElement("logo_30x30", new XCData(item.ImageLink ?? string.Empty)));
+                    if(item.GetInfo!=null) channel.Add(new XElement("get_info", new XCData(item.GetInfo ?? string.Empty)));
+                   if(item.SearchOn!=null) channel.Add(new XElement("search_on", new XCData(item.SearchOn ?? string.Empty)));
 
                     switch (item.Type) {
                         case ItemType.DIRECTORY:

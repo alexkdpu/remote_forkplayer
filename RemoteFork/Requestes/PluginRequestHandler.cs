@@ -57,7 +57,8 @@ namespace RemoteFork.Requestes {
             var query = new NameValueCollection {
                 [null] = string.Concat(ParamPluginKey, pluginName, Path.DirectorySeparatorChar, ".xml")
             };
-
+            string url = request.Url.OriginalString.Substring(7);
+            query.Set("host", url.Substring(0, url.IndexOf("/")));
             if (parameters != null) {
                 query.Add(parameters);
             }

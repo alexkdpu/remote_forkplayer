@@ -97,9 +97,11 @@ namespace RemoteFork.Forms {
 
         private void Main_Load(object sender, EventArgs e) {
             LoadSettings();
-
-            notifyIcon1.Visible = true;
-            HideForm();
+            try
+            {
+                notifyIcon1.Visible = true;
+                HideForm();
+            }catch(Exception exc) { }
         }
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e) {
@@ -433,9 +435,9 @@ namespace RemoteFork.Forms {
                 return;
             }
             toolStripStatusLabel1.Text += "...";
-            Console.WriteLine("timer");
+            //Console.WriteLine("timer");
             var result = HttpUtility.GetRequest("http://195.88.208.101/obovse.ru/smarttv/api.php?do=xhrremote2&direct&proxy=1&v=get");
-            Console.WriteLine(result);
+          //  Console.WriteLine(result);
             if (result.IndexOf("/parserlink") == 0)
             {
                 Console.WriteLine("parserlink remote");
@@ -450,7 +452,7 @@ namespace RemoteFork.Forms {
                     var curlResponse = requestStrings[0].StartsWith("curl")
                         ? Handle.CurlRequest(System.Web.HttpUtility.UrlDecode(requestStrings[0]))
                         : HttpUtility.GetRequest(requestStrings[0]);
-                    Console.WriteLine("Response original " + curlResponse);
+                    //Console.WriteLine("Response original " + curlResponse);
                     if (requestStrings.Length == 1)
                     {
                         result2 = curlResponse;
@@ -493,16 +495,74 @@ namespace RemoteFork.Forms {
                             if (match.Success) result2 = match.Groups[1].Captures[0].ToString();
                         }
                     }
-                    Console.WriteLine("result="+result2);
+                    //Console.WriteLine("result="+result2);
                     var xu = "http://195.88.208.101/obovse.ru/smarttv/api.php?do=xhrremote2&proxy=1&v=post&u=" + System.Web.HttpUtility.UrlEncode(result);
                     Console.WriteLine(xu);
                     Dictionary<string, string> s=new Dictionary<string, string>();
                     s["s"] = result2;
-                    Console.WriteLine("answ="+HttpUtility.PostRequest(xu, s));
+                    Console.WriteLine("answ="+ HttpUtility.PostRequest(xu, s));
                 }
             }
 
             toolStripStatusLabel1.Text = toolStripStatusLabel1.Text.Replace("...", "");
+        }
+        private string SendBatch(string URL, string POSTdata)
+        {
+            string responseData = "";
+            try
+            {
+                HttpWebRequest hwrequest = (HttpWebRequest)WebRequest.Create(URL);
+                hwrequest.Timeout = 600000;
+                hwrequest.KeepAlive = true;
+                hwrequest.Method = "POST";
+                hwrequest.ContentType = "application/x-www-form-urlencoded";
+
+                byte[] postByteArray = System.Text.Encoding.UTF8.GetBytes("s=" + POSTdata);
+
+                hwrequest.ContentLength = postByteArray.Length;
+
+                System.IO.Stream postStream = hwrequest.GetRequestStream();
+                postStream.Write(postByteArray, 0, postByteArray.Length);
+                postStream.Close();
+
+                HttpWebResponse hwresponse = (HttpWebResponse)hwrequest.GetResponse();
+                if (hwresponse.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    System.IO.StreamReader responseStream = new System.IO.StreamReader(hwresponse.GetResponseStream());
+                    responseData = responseStream.ReadToEnd();
+                }
+                hwresponse.Close();
+            }
+            catch (Exception e)
+            {
+                responseData = "An error occurred: " + e.Message;
+            }
+            return responseData;
+
+        }
+    private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void groupBox1_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+
+        }
+
+        private void менюToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
