@@ -13,7 +13,7 @@ namespace PluginApi.Plugins
         string CreatePluginUrl(NameValueCollection parameters);
 
         IHTTPClient GetHttpClient();
-
+        void ConsoleLog(string s);
         ILogger GetLogger();
     }
 }

@@ -9,7 +9,7 @@ namespace PluginApi.Plugins
         {
             Items = new Item[0]
         };
-        
+        public string source { get; set; }
         public string GetInfo { get; set; }
         public string NextPageUrl { get; set; }
         public string IsIptv { get; set; }

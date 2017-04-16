@@ -9,6 +9,6 @@ namespace PluginApi.Plugins
     {
         string GetRequest(string link, Dictionary<string, string> header = null);
 
-        string PostRequest(string link, Dictionary<string, string> data, Dictionary<string, string> header = null);
+        string PostRequest(string link, string data, Dictionary<string, string> header = null);
     }
 }
