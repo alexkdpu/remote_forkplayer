@@ -7,7 +7,9 @@ using System.Reflection;
 using System.Security.Cryptography;
 using Common.Logging;
 using Microsoft.CSharp;
+using Microsoft.VisualBasic;
 using RemoteFork.Properties;
+using System.Xml.Linq;
 
 namespace RemoteFork.Plugins
 {
@@ -24,7 +26,7 @@ namespace RemoteFork.Plugins
             LoadPlugins();
         }
 
-        public static Assembly CompileAssembly(string sourceFile)
+        public static Assembly CompileAssemblyCS(string sourceFile)
         {
             var codeProvider = new CSharpCodeProvider();
 
@@ -38,6 +40,8 @@ namespace RemoteFork.Plugins
             compilerParameters.ReferencedAssemblies.Add(Assembly.GetAssembly(typeof(IPlugin)).Location);
             compilerParameters.ReferencedAssemblies.Add("System.dll");
             compilerParameters.ReferencedAssemblies.Add("System.Core.dll");
+            compilerParameters.ReferencedAssemblies.Add("System.Xml.dll");
+            compilerParameters.ReferencedAssemblies.Add("System.Xml.Linq.dll");
 
             var result = codeProvider.CompileAssemblyFromFile(compilerParameters, sourceFile);
 
@@ -59,14 +63,51 @@ namespace RemoteFork.Plugins
 
             return result.CompiledAssembly;
         }
+        public static Assembly CompileAssemblyVB(string sourceFile)
+        {
+            var codeProvider = new VBCodeProvider();
 
+            var compilerParameters = new CompilerParameters
+            {
+                GenerateExecutable = false,
+                GenerateInMemory = true,
+                IncludeDebugInformation = true
+            };
+
+            compilerParameters.ReferencedAssemblies.Add(Assembly.GetAssembly(typeof(IPlugin)).Location);
+            compilerParameters.ReferencedAssemblies.Add("System.dll");
+            compilerParameters.ReferencedAssemblies.Add("System.Core.dll");
+            compilerParameters.ReferencedAssemblies.Add("System.Xml.dll");
+            compilerParameters.ReferencedAssemblies.Add("System.Xml.Linq.dll");
+
+            var result = codeProvider.CompileAssemblyFromFile(compilerParameters, sourceFile);
+
+            var hasCompileErrors = false;
+            foreach (CompilerError ce in result.Errors)
+            {
+                Log.Debug(m => m("{0}({1},{2}): {3} {4}: {5}", ce.FileName, ce.Line, ce.Column, ce.IsWarning ? "warning" : "error", ce.ErrorNumber, ce.ErrorText));
+
+                if (!ce.IsWarning)
+                {
+                    hasCompileErrors = true;
+                }
+            }
+
+            if (hasCompileErrors)
+            {
+                throw new ApplicationException("Compile errors occured, see debug log for more details.");
+            }
+
+            return result.CompiledAssembly;
+        }
         private void LoadPlugins()
         {
             var pathPlugins = Path.Combine(Environment.CurrentDirectory, "Plugins");
 
             if (Directory.Exists(pathPlugins))
             {
-                LoadScripts(pathPlugins);
+                LoadScriptsCS(pathPlugins);
+                LoadScriptsVB(pathPlugins);
                 LoadAssemblies(pathPlugins);
             }
         }
@@ -88,7 +129,7 @@ namespace RemoteFork.Plugins
             }
         }
 
-        private void LoadScripts(string pathPlugins)
+        private void LoadScriptsCS(string pathPlugins)
         {
             var files = Directory.GetFiles(pathPlugins, "*.cs");
 
@@ -96,7 +137,7 @@ namespace RemoteFork.Plugins
             {
                 try
                 {
-                    LoadAssembly(CompileAssembly(file), GetChecksum(file));
+                    LoadAssembly(CompileAssemblyCS(file), GetChecksum(file));
                 }
                 catch (Exception ex)
                 {
@@ -105,6 +146,22 @@ namespace RemoteFork.Plugins
             }
         }
 
+   private void LoadScriptsVB(string pathPlugins)
+        {
+            var files = Directory.GetFiles(pathPlugins, "*.vb");
+
+            foreach (var file in files)
+            {
+                try
+                {
+                  LoadAssembly(CompileAssemblyVB(file), GetChecksum(file));
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(m => m("LoadPlugins->{0}: {1}", file, ex));
+                }
+            }
+        }
         private void LoadAssembly(Assembly assembly, string hash)
         {
             foreach (var type in assembly.GetExportedTypes())

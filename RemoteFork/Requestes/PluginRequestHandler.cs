@@ -27,7 +27,12 @@ namespace RemoteFork.Requestes {
                     var pluginResponse = plugin.Instance.GetList(new PluginContext(pluginKey, request, new NameValueCollection(request.QueryString)));
 
                     if (pluginResponse != null) {
-                        WriteResponse(response, ResponseSerializer.ToXml(pluginResponse));
+                        if (pluginResponse.source != null)
+                        {
+                            Log.Debug(m => m("Plugin Playlist.source not null! Write to response Playlist.source and ignore other methods. Plugin: {0}", pluginKey));
+                            WriteResponse(response, pluginResponse.source);
+                        }
+                        else WriteResponse(response, ResponseSerializer.ToXml(pluginResponse));
                     } else {
                         Log.Warn(m => m("Plugin Playlist is null. Plugin: {0}", pluginKey));
 

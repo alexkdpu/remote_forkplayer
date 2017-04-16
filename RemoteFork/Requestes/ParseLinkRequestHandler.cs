@@ -7,6 +7,7 @@ using Unosquare.Net;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
+using System.IO;
 
 namespace RemoteFork.Requestes {
 
@@ -16,58 +17,77 @@ namespace RemoteFork.Requestes {
 
         public override void Handle(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var result = string.Empty;
-            var url = System.Web.HttpUtility.UrlDecode(request.RawUrl)?.Substring(UrlPath.Length);
-            if (url.Substring(0, 1) == "B") url = Encoding.UTF8.GetString(Convert.FromBase64String(url.Substring(1,url.Length-2)));
-            var ts = "";
-            bool usertype = false;
-            Dictionary<string, string> header = new Dictionary<string, string>();
-            Console.WriteLine("Proxy url: " + url);
-            if (url.IndexOf("OPT:") > 0)
+            try
             {
-                if (url.IndexOf("OPEND:/") == url.Length - 7)
+                var result = string.Empty;
+                var url = System.Web.HttpUtility.UrlDecode(request.RawUrl)?.Substring(UrlPath.Length);
+                if (url.Substring(0, 1) == "B")
                 {
-                    url = url.Replace("OPEND:/", "");
-                    Console.WriteLine("Req root m3u8 " + url);
-                }
-                else
-                {
-                    ts=url.Substring(url.IndexOf("OPEND:/") + 7);
-                    Console.WriteLine("Req m3u8 ts " + ts);
-                }
-                if (url.IndexOf("OPEND:/")>0) url=url.Substring(0, url.IndexOf("OPEND:/"));
-                var Headers = url.Substring(url.IndexOf("OPT:") + 4).Replace("--", "|").Split('|');
-                url = url.Substring(0, url.IndexOf("OPT:"));
-                Console.WriteLine("Real url:"+url);
-                for(var i = 0; i < Headers.Length; i++)
-                {
-                    if(Headers[i]=="ContentType")
+                    if (url.IndexOf("endbase64") > 0)
                     {
-                        usertype = true;
-                        response.ContentType = Headers[++i];
-                        continue;
+                        url = Encoding.UTF8.GetString(Convert.FromBase64String(url.Substring(1, url.IndexOf("endbase64") - 1))) + url.Substring(url.IndexOf("endbase64") + 9);
                     }
-                    header[Headers[i]] = Headers[++i];
-                    Console.WriteLine(Headers[i-1]+"="+Headers[i]);
+                    else url = Encoding.UTF8.GetString(Convert.FromBase64String(url.Substring(1, url.Length - 2)));
                 }
-            }
-            if (!usertype)
-            {
-                if (ts != "")
+                var ts = "";
+                bool usertype = false;
+                Dictionary<string, string> header = new Dictionary<string, string>();
+                Console.WriteLine("Proxy url: " + url);
+                if (url.IndexOf("OPT:") > 0)
                 {
-                    url = url.Substring(0, url.LastIndexOf("/") + 1) + ts;
-                    Console.WriteLine("Full ts url " + url);
-                    response.ContentType = "video/mp2t";
-
+                    if (url.IndexOf("OPEND:/") == url.Length - 7)
+                    {
+                        url = url.Replace("OPEND:/", "");
+                        Console.WriteLine("Req root m3u8 " + url);
+                    }
+                    else
+                    {
+                        ts = url.Substring(url.IndexOf("OPEND:/") + 7);
+                        Console.WriteLine("Req m3u8 ts " + ts);
+                    }
+                    if (url.IndexOf("OPEND:/") > 0) url = url.Substring(0, url.IndexOf("OPEND:/"));
+                    var Headers = url.Substring(url.IndexOf("OPT:") + 4).Replace("--", "|").Split('|');
+                    url = url.Substring(0, url.IndexOf("OPT:"));
+                    for (var i = 0; i < Headers.Length; i++)
+                    {
+                        if (Headers[i] == "ContentType")
+                         {
+                            if (!string.IsNullOrEmpty(request.Headers.Get("Range"))){
+                                header["Range"] = request.Headers.Get("Range");
+                            }
+                            response.Headers.Add(Unosquare.Labs.EmbedIO.Constants.HeaderAcceptRanges, "bytes");
+                            Console.WriteLine("reproxy with ContentType");
+                            usertype = true;
+                            response.ContentType = Headers[++i];
+                            continue;
+                        }
+                        header[Headers[i]] = Headers[++i];
+                        Console.WriteLine(Headers[i - 1] + "=" + Headers[i]);
+                    }
                 }
-                else response.ContentType = "application/vnd.apple.mpegurl";
-                response.Headers.Remove("Tranfer-Encoding");
-            }
-            response.Headers.Remove("Keep-Alive");
-           // response.AddHeader("Accept-Ranges", "bytes");
+                if (!usertype)
+                {
+                    if (ts != "")
+                    {
+                        url = url.Substring(0, url.LastIndexOf("/") + 1) + ts;
+                        Console.WriteLine("Full ts url " + url);
+                        response.ContentType = "video/mp2t";
 
-            HttpUtility.GetByteRequest(response, url, header, false, true);
-           //WriteResponse(response, result);
+                    }
+                    else response.ContentType = "application/vnd.apple.mpegurl";
+                }
+                response.Headers.Remove("Tranfer-Encoding");
+                response.Headers.Remove("Keep-Alive");
+                // response.AddHeader("Accept-Ranges", "bytes");
+                Console.WriteLine("Real url:" + url);
+                HttpUtility.GetByteRequest(response, url, header, usertype);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("ParseRq="+e.ToString());
+                WriteResponse(response, e.ToString());
+            }
+            //
         }
     }
 
@@ -78,9 +98,15 @@ namespace RemoteFork.Requestes {
 
         public override void Handle(HttpListenerRequest request, HttpListenerResponse response) {
             var result = string.Empty;
-
+            Console.WriteLine(request.RawUrl);
             var requestStrings = System.Web.HttpUtility.UrlDecode(request.RawUrl)?.Substring(UrlPath.Length + 1).Split('|');
-
+            if (request.HttpMethod == "POST")
+            {
+                StreamReader getPostParam = new StreamReader(request.InputStream, true);
+                var postData = getPostParam.ReadToEnd();
+                //Console.WriteLine("POST "+ postData);
+                requestStrings = System.Web.HttpUtility.UrlDecode(postData)?.Substring(2).Split('|');
+            }
             if (requestStrings != null) {
                 Log.Debug(m => m("Parsing: {0}", requestStrings[0]));
 
@@ -161,12 +187,16 @@ namespace RemoteFork.Requestes {
                 select value).ToDictionary(value => value.Remove(value.IndexOf(": ", StringComparison.Ordinal)),
                     value => value.Substring(value.IndexOf(": ", StringComparison.Ordinal) + 2));
             if (text.Contains("--data")) {
-                var dataString = Regex.Match(text, "(?:--data\\s\")(.*?)(?=\")").Groups[1].Value;
-                var dataArray = dataString.Split('&');
-                var data =
-                    dataArray.ToDictionary(value => value.Remove(value.IndexOf("=", StringComparison.Ordinal)),
-                        value => value.Substring(value.IndexOf("=", StringComparison.Ordinal) + 1));
-                result = HttpUtility.PostRequest(url, data, header, verbose,autoredirect);
+                Console.WriteLine("POST DATA");
+                try { 
+                  var dataString = Regex.Match(text, "(?:--data\\s\")(.*?)(?=\")").Groups[1].Value;
+                  result = HttpUtility.PostRequest(url, dataString, header, verbose,autoredirect);
+                }
+                catch(Exception e)
+                {
+                    result = e.ToString();
+                    Console.WriteLine(e.ToString());
+                }
             } else {
                 Log.Info(url);
 
