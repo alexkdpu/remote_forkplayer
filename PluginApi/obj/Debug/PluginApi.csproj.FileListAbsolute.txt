@@ -8,3 +8,15 @@ C:\vsproject\remote_forkplayer-master_1.3 — копия\PluginApi\bin\Debug\Plu
 C:\vsproject\remote_forkplayer-master_1.3 — копия\PluginApi\obj\Debug\PluginApi.csprojResolveAssemblyReference.cache
 C:\vsproject\remote_forkplayer-master_1.3 — копия\PluginApi\obj\Debug\PluginApi.dll
 C:\vsproject\remote_forkplayer-master_1.3 — копия\PluginApi\obj\Debug\PluginApi.pdb
+H:\my\vsproject\remote_forkplayer-master3\remote_forkplayer-master\PluginApi\bin\Debug\PluginApi.dll
+H:\my\vsproject\remote_forkplayer-master3\remote_forkplayer-master\PluginApi\bin\Debug\PluginApi.pdb
+H:\my\vsproject\remote_forkplayer-master3\remote_forkplayer-master\PluginApi\obj\Debug\PluginApi.dll
+H:\my\vsproject\remote_forkplayer-master3\remote_forkplayer-master\PluginApi\obj\Debug\PluginApi.pdb
+H:\my\vsproject\remote_forkplayer-master3\remote_forkplayer-master\PluginApi\bin\Debug\System.Xml.Linq.dll
+H:\my\vsproject\remote_forkplayer-master3\remote_forkplayer-master\PluginApi\obj\Debug\PluginApi.csprojResolveAssemblyReference.cache
+C:\visualstudio\remote_forkplayer-master\PluginApi\bin\Debug\PluginApi.dll
+C:\visualstudio\remote_forkplayer-master\PluginApi\bin\Debug\PluginApi.pdb
+C:\visualstudio\remote_forkplayer-master\PluginApi\bin\Debug\System.Xml.Linq.dll
+C:\visualstudio\remote_forkplayer-master\PluginApi\obj\Debug\PluginApi.csprojResolveAssemblyReference.cache
+C:\visualstudio\remote_forkplayer-master\PluginApi\obj\Debug\PluginApi.dll
+C:\visualstudio\remote_forkplayer-master\PluginApi\obj\Debug\PluginApi.pdb
