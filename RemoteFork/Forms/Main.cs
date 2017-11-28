@@ -12,7 +12,7 @@ using RemoteFork.Plugins;
 using RemoteFork.Properties;
 using RemoteFork.Server;
 using System.Text.RegularExpressions;
-
+using System.Threading;
 namespace RemoteFork.Forms {
     internal partial class Main : Form {
         private static readonly ILog Log = LogManager.GetLogger(typeof(Main));
@@ -48,8 +48,7 @@ namespace RemoteFork.Forms {
             } else {
                 cbIp.SelectedIndex = 0;
             }
-
-            if (Settings.Default.ServerAutoStart) {
+            if (Settings.Default.ServerAutoStart||true) {
                 bStartServer.PerformClick();
             }
 
@@ -60,6 +59,7 @@ namespace RemoteFork.Forms {
 
             tbUserAgent.Text = Settings.Default.UserAgent;
             loading = false;
+            
         }
 
         #endregion Settings
@@ -96,12 +96,19 @@ namespace RemoteFork.Forms {
         }
 
         private void Main_Load(object sender, EventArgs e) {
+            
+            Environment.CurrentDirectory = Path.GetDirectoryName(Application.ExecutablePath);
+
             LoadSettings();
             try
             {
                 notifyIcon1.Visible = true;
                 HideForm();
-            }catch(Exception exc) { }
+                //webBrowser1.Navigate("http://tree.tv/feedback");
+                autost();
+
+            }
+            catch(Exception exc) { }
         }
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e) {
@@ -164,8 +171,11 @@ namespace RemoteFork.Forms {
         }
 
         private void StopServer() {
-            _httpServer?.Dispose();
-            _httpServer = null;
+            if (_httpServer != null)
+            {
+                _httpServer.Stop();
+                _httpServer = null;
+            }
         }
 
         #endregion Server
@@ -180,6 +190,9 @@ namespace RemoteFork.Forms {
                 bStartServer.Enabled = false;
                 bStopServer.Enabled = true;
                 toolStripStatusLabel1.Text = "Сервер запущен";
+                             
+             
+
             } catch (Exception ex) {
                 toolStripStatusLabel1.Text = "Ошибка!";
                 Log.Error(m => m("StartServer->Errot: {0}", ex));
@@ -201,9 +214,35 @@ namespace RemoteFork.Forms {
         }
 
         private void cbAutoStart_CheckedChanged(object sender, EventArgs e) {
+            Console.WriteLine("cbAutoStart_CheckedChanged");
+            autost();
             Settings.Default.ServerAutoStart = cbAutoStart.Checked;
+            Settings.Default.Save();
         }
+        void autost()
+        {            
+            try
+            {
+                var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run\", true);
+                if(key.GetValue("RemoteFork")!=null) key.DeleteValue("RemoteFork");
+                if (cbAutoStart.Checked) key.SetValue("RemoteFork", Application.ExecutablePath);
+                
+            }
+            catch(Exception e)
+            {
+                toolStripStatusLabel1.Text = "Запустите от администратора!";
+                cbAutoStart.Enabled = false;
+                cbAutoStart.Text = "Автозапуск (Нет доступа к реестру)";
+                ToolTip t = new ToolTip();
+                t.SetToolTip(cbAutoStart, e.Message+ " Запустите программу от имени администратора!");
+                if (cbAutoStart.Checked)
+                {
+                  //  cbAutoStart.Checked = false;
+                   // MessageBox.Show("Не удалось установить RemoteFork в автозапуск при старте Windows. Запустите программу от имени администратора!", e.Message);
+                }
+            }
 
+        }
         private void cbDlna_CheckedChanged(object sender, EventArgs e) {
             Settings.Default.Dlna = cbDlna.Checked;
             Settings.Default.Save();
@@ -280,7 +319,7 @@ namespace RemoteFork.Forms {
                 if ((text.Length < 102401) && (text.Contains("EXTM3U") || text.Contains("<title>") || text.Contains("http://"))) {
                     var url = "http://forkplayer.tv/remote/index.php?do=uploadfile&fname=" + openFileDialog1.FileName + "&initial=" + clickedItem.Tag;
 
-                    var data = new Dictionary<string, string> {{"text", text}};
+                    var data = "text="+ System.Web.HttpUtility.UrlEncode(text);
                     var text2 = HttpUtility.PostRequest(url, data);
 
                     MessageBox.Show(text2);
@@ -498,9 +537,7 @@ namespace RemoteFork.Forms {
                     //Console.WriteLine("result="+result2);
                     var xu = "http://195.88.208.101/obovse.ru/smarttv/api.php?do=xhrremote2&proxy=1&v=post&u=" + System.Web.HttpUtility.UrlEncode(result);
                     Console.WriteLine(xu);
-                    Dictionary<string, string> s=new Dictionary<string, string>();
-                    s["s"] = result2;
-                    Console.WriteLine("answ="+ HttpUtility.PostRequest(xu, s));
+                    Console.WriteLine("answ="+ HttpUtility.PostRequest(xu, "s="+ System.Web.HttpUtility.UrlEncode(result2)));
                 }
             }
 
@@ -513,7 +550,7 @@ namespace RemoteFork.Forms {
             {
                 HttpWebRequest hwrequest = (HttpWebRequest)WebRequest.Create(URL);
                 hwrequest.Timeout = 600000;
-                hwrequest.KeepAlive = true;
+                hwrequest.KeepAlive = false;
                 hwrequest.Method = "POST";
                 hwrequest.ContentType = "application/x-www-form-urlencoded";
 
@@ -561,6 +598,16 @@ namespace RemoteFork.Forms {
         }
 
         private void менюToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void toolStripStatusLabel1_Click(object sender, EventArgs e)
         {
 
         }

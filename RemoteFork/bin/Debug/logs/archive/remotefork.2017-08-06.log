@@ -1,0 +1,13 @@
+2017-08-06 00:02:37.3508|DEBUG|Unosquare.Labs.EmbedIO.WebServer|Start of Request d637f6e3 
+2017-08-06 04:18:40.7590|ERROR|RemoteFork.Plugins.PluginManager|LoadPlugins->C:\visualstudio\remote_forkplayer-master\RemoteFork\bin\Debug\Plugins\AceTorrentPlay.cs: System.ApplicationException: Compile errors occured, see debug log for more details.
+   в RemoteFork.Plugins.PluginManager.CompileAssemblyCS(String sourceFile) в C:\visualstudio\remote_forkplayer-master\RemoteFork\Plugins\PluginManager.cs:строка 61
+   в RemoteFork.Plugins.PluginManager.LoadScriptsCS(String pathPlugins) в C:\visualstudio\remote_forkplayer-master\RemoteFork\Plugins\PluginManager.cs:строка 140 
+2017-08-06 04:19:58.2398|ERROR|RemoteFork.Plugins.PluginManager|LoadPlugins->C:\visualstudio\remote_forkplayer-master\RemoteFork\bin\Debug\Plugins\AceTorrentPlay.cs: System.ApplicationException: Compile errors occured, see debug log for more details.
+   в RemoteFork.Plugins.PluginManager.CompileAssemblyCS(String sourceFile) в C:\visualstudio\remote_forkplayer-master\RemoteFork\Plugins\PluginManager.cs:строка 61
+   в RemoteFork.Plugins.PluginManager.LoadScriptsCS(String pathPlugins) в C:\visualstudio\remote_forkplayer-master\RemoteFork\Plugins\PluginManager.cs:строка 140 
+2017-08-06 04:24:34.8721|ERROR|RemoteFork.Plugins.PluginManager|LoadPlugins->C:\visualstudio\remote_forkplayer-master\RemoteFork\bin\Debug\Plugins\AceTorrentPlay.cs: System.ApplicationException: Compile errors occured, see debug log for more details.
+   в RemoteFork.Plugins.PluginManager.CompileAssemblyCS(String sourceFile) в C:\visualstudio\remote_forkplayer-master\RemoteFork\Plugins\PluginManager.cs:строка 62
+   в RemoteFork.Plugins.PluginManager.LoadScriptsCS(String pathPlugins) в C:\visualstudio\remote_forkplayer-master\RemoteFork\Plugins\PluginManager.cs:строка 141 
+2017-08-06 04:25:31.6679|ERROR|RemoteFork.Plugins.PluginManager|LoadPlugins->C:\visualstudio\remote_forkplayer-master\RemoteFork\bin\Debug\Plugins\AceTorrentPlay.cs: System.ApplicationException: Compile errors occured, see debug log for more details.
+   в RemoteFork.Plugins.PluginManager.CompileAssemblyCS(String sourceFile) в C:\visualstudio\remote_forkplayer-master\RemoteFork\Plugins\PluginManager.cs:строка 62
+   в RemoteFork.Plugins.PluginManager.LoadScriptsCS(String pathPlugins) в C:\visualstudio\remote_forkplayer-master\RemoteFork\Plugins\PluginManager.cs:строка 141 

@@ -228,7 +228,7 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 284);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 282);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(217, 22);
             this.statusStrip1.TabIndex = 19;
@@ -239,6 +239,7 @@
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             this.toolStripStatusLabel1.Size = new System.Drawing.Size(114, 17);
             this.toolStripStatusLabel1.Text = "Сервер остановлен";
+            this.toolStripStatusLabel1.Click += new System.EventHandler(this.toolStripStatusLabel1_Click);
             // 
             // groupBox1
             // 
@@ -270,9 +271,9 @@
             this.cbAutoStart.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cbAutoStart.Location = new System.Drawing.Point(12, 36);
             this.cbAutoStart.Name = "cbAutoStart";
-            this.cbAutoStart.Size = new System.Drawing.Size(143, 17);
+            this.cbAutoStart.Size = new System.Drawing.Size(184, 17);
             this.cbAutoStart.TabIndex = 5;
-            this.cbAutoStart.Text = "Автостарт при запуске";
+            this.cbAutoStart.Text = "Запускать при старте Windows";
             this.cbAutoStart.UseVisualStyleBackColor = true;
             this.cbAutoStart.CheckedChanged += new System.EventHandler(this.cbAutoStart_CheckedChanged);
             // 
@@ -389,7 +390,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(217, 306);
+            this.ClientSize = new System.Drawing.Size(217, 304);
             this.ContextMenuStrip = this.contextMenuStrip1;
             this.Controls.Add(this.checkBoxProxy);
             this.Controls.Add(this.thvpAutoStart);

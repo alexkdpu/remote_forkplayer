@@ -7,6 +7,7 @@ using System.Text;
 using Common.Logging;
 using RemoteFork.Properties;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace RemoteFork.Network {
     public static class HttpUtility {
@@ -14,67 +15,113 @@ namespace RemoteFork.Network {
 
         private static readonly CookieContainer CookieContainer = new CookieContainer();
         private static bool _clearCookies;
-
-        public static void GetByteRequest(Unosquare.Net.HttpListenerResponse output, string link, Dictionary<string, string> header = null, bool verbose = false, bool databyte = false)
+        private static System.IO.StreamReader stream;
+        private static System.IO.StreamReader stream2;
+        public static void GetByteRequest(Unosquare.Net.HttpListenerResponse output, string link, Dictionary<string, string> header = null, bool wcc = false)
         {
             try
             {
+                Console.WriteLine("GetByteRequest");
+                HttpWebRequest wc=null;
+                if (wcc)
+                {
+                    wc = (HttpWebRequest)HttpWebRequest.Create(link);
+                    wc.Proxy = GlobalProxySelection.GetEmptyWebProxy();
+                }
                 _clearCookies = false;
                 if (header != null)
                 {
-                    foreach (var entry in header)
+                    foreach (var h in header)
                     {
-                        Log.Info(entry.ToString());
-                        if (entry.Key == "Cookie")
+                        try
                         {
-                            _clearCookies = true;
-                            CookieContainer.SetCookies(new Uri(link), entry.Value.Replace(";", ","));
-                        }
-                    }
-                }
-                for (var i = 0; i < 3; i++)
-                {
-                    try
-                    {
-                        using (var handler = new HttpClientHandler())
-                        {
-                            SetHandler(handler);
-                            using (var httpClient = new HttpClient(handler))
+                            Console.WriteLine(h.Key + " set=" + h.Value);
+                            if (h.Key == "Cookie")
                             {
-                                AddHeader(httpClient, header);
-                                var response = httpClient.GetAsync(link).Result;
-                                if (_clearCookies)
+                                _clearCookies = true;
+                                CookieContainer.SetCookies(new Uri(link), h.Value.Replace(";", ","));
+                            }
+                            if (wcc)
+                            {
+                                if (h.Key == "Range")
                                 {
-                                    var cookies = handler.CookieContainer.GetCookies(new Uri(link));
-                                    foreach (Cookie co in cookies)
+                                    var x = h.Value.Split('=')[1].Split('-');
+                                    if (x.Length == 1) wc.AddRange(Convert.ToInt64(x[0]));
+                                    else if (x.Length == 2)
                                     {
-                                        co.Expires = DateTime.Now.Subtract(TimeSpan.FromDays(1));
+                                        if (String.IsNullOrEmpty(x[1]))
+                                        {
+                                            Console.WriteLine(x[0]);
+                                            if (Convert.ToInt64(x[0]) > 0) wc.AddRange(Convert.ToInt64(x[0]));
+                                        }
+                                        else wc.AddRange(Convert.ToInt64(x[0]), Convert.ToInt64(x[1]));
                                     }
                                 }
-                                Log.Info("return get headers=" + verbose);
-
-                                //return response.ToString();
-                                var r = response.Content.ReadAsByteArrayAsync().Result;
-                                Console.WriteLine("Len i="+i+" " + r.Length);
-                                if (r.Length > 0)
-                                {
-                                    output.ContentLength64 = r.Length;
-                                    output.OutputStream.Write(r, 0, r.Length);
-                                    break;
-                                }
-
+                                else wc.Headers.Add(h.Key, h.Value);
                             }
                         }
-                    }
-                    catch (Exception e) {
-                        Console.WriteLine("Err i="+i+" " + e.ToString());
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("Er getbyte h " + ex.ToString());
+                            System.IO.File.AppendAllText(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase).Substring(6) + "\\log.txt", ex.Message + " Error h " + link + Environment.NewLine);
+                        }
                     }
                 }
+                if (wcc)
+                {
+                    var resp = (HttpWebResponse)wc.GetResponse();
+                    Console.WriteLine(resp.Headers);
+                    if (!string.IsNullOrEmpty(resp.Headers["Content-Length"]))
+                        output.ContentLength64 = Convert.ToInt64(resp.Headers["Content-Length"]);
+
+                    Console.WriteLine("wc stream");
+                    stream = new System.IO.StreamReader(resp.GetResponseStream());
+                    stream.BaseStream.CopyTo(output.OutputStream);
+                }
+                else
+                {
+                    Console.WriteLine("HttpClientHandler stream");                   
+                    using (var handler = new HttpClientHandler())
+                    {
+                        SetHandler(handler);
+                        using (var httpClient = new System.Net.Http.HttpClient(handler))
+                        {
+
+                            AddHeader(httpClient, header);
+                            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                            ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => { return true; };
+                            var response = httpClient.GetAsync(link).Result;
+                            var r = response.Content.ReadAsByteArrayAsync().Result;
+                            Console.WriteLine("Len " + r.Length);
+                          //  Console.WriteLine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase).Substring(6) + "\\log.txt");
+                          // System.IO.File.AppendAllText(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase).Substring(6)+"\\log.txt", r.Length +"byte  "+ link+Environment.NewLine);
+
+                            if (r.Length > 0)
+                            {
+                                output.ContentLength64 = r.Length;
+                                output.OutputStream.Write(r, 0, r.Length);
+
+                            }
+
+                        }
+                    }
+                }
+             
+                     
             }
             catch (Exception ex)
             {
+                Console.WriteLine("Er getbyte" + ex.ToString());
+                System.IO.File.AppendAllText(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase).Substring(6) + "\\log.txt", ex.Message+" Error " + link + Environment.NewLine);
+
                 Log.Error(m => m("HttpUtility->GetRequest: {0}", ex.Message));
                 
+                //output.OutputStream.Close();
+                  using (var writer = new System.IO.StreamWriter(output.OutputStream))
+                  {
+                      writer.Write(ex.ToString());
+                  }
+ 
             }
         }
         public static string GetRequest(string link, Dictionary<string, string> header = null, bool verbose = false, bool databyte=false, bool autoredirect=true) {
@@ -90,10 +137,16 @@ namespace RemoteFork.Network {
                     }
                 }
                 using (var handler = new HttpClientHandler(){AllowAutoRedirect = autoredirect }) {
+                  
                     SetHandler(handler);
                     using (var httpClient = new HttpClient(handler)) {
                         AddHeader(httpClient, header);
-                        var response = httpClient.GetAsync(link).Result;
+                        Console.WriteLine("Get "+link);
+                        HttpResponseMessage response=null;
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                        ServicePointManager.ServerCertificateValidationCallback +=(sender, cert, chain, sslPolicyErrors) => { return true; };
+                            response = httpClient.GetAsync(link).Result;
+                       
                         if (_clearCookies) {
                             var cookies = handler.CookieContainer.GetCookies(new Uri(link));
                             foreach (Cookie co in cookies) {
@@ -137,7 +190,7 @@ namespace RemoteFork.Network {
             }
         }
 
-        public static string PostRequest(string link, Dictionary<string, string> data,
+        public static string PostRequest(string link, string data,
                                          Dictionary<string, string> header = null, bool verbose = false, bool autoredirect = true) {
             try {
                 _clearCookies = false;
@@ -156,9 +209,11 @@ namespace RemoteFork.Network {
                     using (var httpClient = new HttpClient(handler)) {
                         AddHeader(httpClient, header);
 
-                        HttpContent content = new FormUrlEncodedContent(data);
-                      
-                        var response = httpClient.PostAsync(link, content).Result;
+                        //HttpContent content = new FormUrlEncodedContent(data);
+                        StringContent queryString = new StringContent(data, Encoding.UTF8, "application/x-www-form-urlencoded");
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                        ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => { return true; };
+                        var response = httpClient.PostAsync(link, queryString).Result;
                         if (_clearCookies) {
                             var cookies = handler.CookieContainer.GetCookies(new Uri(link));
                             foreach (Cookie co in cookies) {
@@ -191,16 +246,20 @@ namespace RemoteFork.Network {
         }
 
         private static void SetHandler(HttpClientHandler handler) {
+            handler.Proxy = GlobalProxySelection.GetEmptyWebProxy();
             handler.CookieContainer = CookieContainer;
             handler.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
         }
 
-        private static void AddHeader(HttpClient httpClient, Dictionary<string, string> header) {
+        public static void AddHeader(HttpClient httpClient, Dictionary<string, string> header) {
+
             if (header != null) {
                 foreach (var h in header) {
                     try {
-                        Console.WriteLine(h.Key + "=" + h.Value);
-                        httpClient.DefaultRequestHeaders.TryAddWithoutValidation(h.Key, h.Value);
+                        Console.WriteLine(h.Key + " set=" + h.Value);
+                        //if(h.Key== "Content-Type") httpClient.DefaultRequestHeaders.Add(h.Key, h.Value);
+                       // else 
+                        if (!httpClient.DefaultRequestHeaders.TryAddWithoutValidation(h.Key, h.Value)) Console.WriteLine("NOT ADD");
                     } catch (Exception ex) {
                         Log.Debug(m => m("HttpUtility->AddHeader: {0}", ex.Message));
                     }

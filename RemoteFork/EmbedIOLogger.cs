@@ -3,7 +3,9 @@ using Common.Logging;
 using Unosquare.Labs.EmbedIO;
 
 namespace RemoteFork {
-    public sealed class EmbedIOLogger : Unosquare.Labs.EmbedIO.Log.ILog {
+   
+    public sealed class EmbedIOLogger : Unosquare.Labs.EmbedIO.Log.ILog
+    {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(WebServer));
 
         public void Info(object message) {

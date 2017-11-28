@@ -1,0 +1,12 @@
+2017-03-22 23:34:10.2623|INFO|RemoteFork.Server.HttpServer|Server start 
+2017-03-22 23:34:10.3024|INFO|Unosquare.Labs.EmbedIO.WebServer|Web server prefix 'http://192.168.0.104:8027/' added. 
+2017-03-22 23:34:10.3024|INFO|Unosquare.Labs.EmbedIO.WebServer|Finished Loading Web Server. 
+2017-03-22 23:34:10.3255|INFO|Unosquare.Labs.EmbedIO.WebServer|Started HTTP Listener 
+2017-03-22 23:34:10.4618|INFO|RemoteFork.Network.HttpUtility|return get headers=False 
+2017-03-22 23:34:10.4618|DEBUG|RemoteFork.Forms.Main|StartServer->Result:  
+2017-03-22 23:37:03.0335|INFO|RemoteFork.Server.HttpServer|Server start 
+2017-03-22 23:37:03.0686|INFO|Unosquare.Labs.EmbedIO.WebServer|Web server prefix 'http://192.168.0.104:8027/' added. 
+2017-03-22 23:37:03.0686|INFO|Unosquare.Labs.EmbedIO.WebServer|Finished Loading Web Server. 
+2017-03-22 23:37:03.0847|INFO|Unosquare.Labs.EmbedIO.WebServer|Started HTTP Listener 
+2017-03-22 23:37:03.1779|INFO|RemoteFork.Network.HttpUtility|return get headers=False 
+2017-03-22 23:37:03.1779|DEBUG|RemoteFork.Forms.Main|StartServer->Result:  
